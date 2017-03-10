@@ -36,3 +36,14 @@ def homepage(request):
 def discussion(request, page):
     return render(request, "discussion.html", context={"page": page})
 
+def submit(request):
+    return render(request, "submit.html", context={})
+
+def myprofile(request):
+    return render(request, "profile.html", context={})
+
+def profile(request, userid):
+    return render(request, "submit.html", context={"user": {"id": userid}})
+
+def create_account(request):
+    return render(request, "registration/create-account.html", context={})

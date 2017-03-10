@@ -24,5 +24,6 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^healthcheck/$', views.health_check),
     url(r'', include('hashertalk.discussions.urls')),
+    url('^', include('django.contrib.auth.urls')),
 ]
 

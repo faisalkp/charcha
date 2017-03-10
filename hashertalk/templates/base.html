@@ -46,10 +46,12 @@
         -webkit-justify-content: space-between;
         -ms-justify-content: space-between;
     }
-    .nav .logo {
+    .nav .logo a {
         font-size: 1.5rem;
         color: #ff5722;
+        text-decoration: none;
     }
+
     .nav .links {
         display: -webkit-box;   /* OLD - iOS 6-, Safari 3.1-6, BB7 */
         display: -ms-flexbox;  /* TWEENER - IE 10 */
@@ -64,7 +66,7 @@
     }
     .nav a {
         color: black;
-        text-decoration: underline;
+        text-decoration: none;
     }
     .posts {
         
@@ -77,12 +79,18 @@
     <div class="container">
     <div class="nav">
       <div class="logo">
-        Talk@HashedIn
+        <a href="{% url "home" %}">Talk@HashedIn</a>
       </div>
       <div class="links">
-          <div class="link"><a href="/submit">Submit</a></div>
-          <div class="link"><a href="/profile">Profile</a></div>
-          <div class="link"><a href="/login">Login</a></div>
+      {% if user.is_authenticated %}
+          <div class="link"><a href="{% url "submit" %}">start a discussion</a></div>
+          <div class="link"><a href="{% url "myprofile" %}">profile</a></div>
+          <div class="link"><a href="{% url "logout" %}">logout</a></div>
+      {% else %}
+          <div class="link"><a href="{% url "create_account" %}">create account</a></div>
+          <div class="link"><a href="{% url "login" %}">login</a></div>
+      {% endif %}
+          
       </div>
     </div>
     {% block content %}
