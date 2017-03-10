@@ -1,190 +1,90 @@
-<!DOCTYPE html>
-<html amp lang="en">
-  <head>
-    <meta charset="utf-8">
-    <script async src="https://cdn.ampproject.org/v0.js"></script>
-    <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
-    <title>Talk @ HashedIn</title>
-    <link rel="canonical" href="http://localhost:8000/" />
-    
-    <script type="application/ld+json">
-      {
-        "@context": "http://schema.org",
-        "@type": "NewsArticle",
-        "headline": "Open-source framework for publishing content",
-        "datePublished": "2015-10-07T12:02:41Z",
-        "image": [
-          "logo.jpg"
-        ]
-      }
-    </script>
-    <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}
-    </style>
-    <noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style>
-    </noscript>
+{% extends "base.html" %}
+{% block title %}Talk@HashedIn{% endblock %}
 
-    <style amp-custom>
-      html, body, body div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, b, i, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, figure, footer, header, menu, nav, section, time, mark, audio, video, details, summary {
-        margin: 0;
-        padding: 0;
-        border: 0;
-        font-size: 100%;
-        font-weight: normal;
-        vertical-align: baseline;
-        background: transparent;
-      }
+{% block pagecss %}
+.post {
+    display: -webkit-box;   /* OLD - iOS 6-, Safari 3.1-6, BB7 */
+    display: -ms-flexbox;  /* TWEENER - IE 10 */
+    display: -webkit-flex; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
+    display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */
+    margin-bottom: 0.6rem;
+ }
+ .post-title h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.2rem;
+ }
+ .post-title a {
+    color: black;
+ }
+ .post-line-2 {
+    color: gray;
+ }
+ .post-line-2 a {
+    color: gray;
+    text-decoration: underline;
+ }
+ .post-vote-control {
+    display: -webkit-box;   /* OLD - iOS 6-, Safari 3.1-6, BB7 */
+    display: -ms-flexbox;  /* TWEENER - IE 10 */
+    display: -webkit-flex; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
+    display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */
+    flex-direction: column;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    justify-content: space-around;
+    -webkit-justify-content: space-around;
+    -ms-flex-justify-content: space-around;
+    text-align: center;
+    margin-top: 3px;
+    margin-right: 15px;
+ }
+ .vote-button {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+ }
+ .upvote {
+    align-self: flex-start;
+    border-bottom: 15px solid #DDDDDD;
+ }
+ .downvote {
+    align-self: flex-end;
+    border-top: 15px solid #DDDDDD;
+ }
+ .upvote-clicked {
+    align-self: flex-start;
+    border-bottom: 15px solid gray;
+ }
+ .downvote-clicked {
+    align-self: flex-end;
+    border-top: 15px solid gray;
+ }
 
-    article, aside, figure, footer, header, nav, section, details, summary {
-      display: block;
-    }
-    html {
-       box-sizing: border-box; 
-    }
-    *,
-    *:before,
-    *:after {
-       box-sizing: inherit; 
-    }
-    a {
-        text-decoration: none;
-    }
-    .container {
-      padding: 0px 15px;   
-    }
-    .nav {
-        display: -webkit-box;   /* OLD - iOS 6-, Safari 3.1-6, BB7 */
-        display: -ms-flexbox;  /* TWEENER - IE 10 */
-        display: -webkit-flex; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
-        display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */        
-        width: 100vw;
-        margin-left: -15px;
-        background-color: #eeeeee;
-        padding: 10px 15px 10px 15px;
-        margin-bottom: 15px;
-        justify-content: space-between;
-    }
-    .nav .logo {
-        font-size: 1.5rem;
-        color: #ff5722;
-    }
-    .nav .links {
-        display: -webkit-box;   /* OLD - iOS 6-, Safari 3.1-6, BB7 */
-        display: -ms-flexbox;  /* TWEENER - IE 10 */
-        display: -webkit-flex; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
-        display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */        
-        list-style-type: none;
-        padding-bottom: 3px;
-        margin-left: 10px;
-        font-size: 1.2rem;
-    }
-    .nav .link {
-        padding: 0 10px;
-        align-self: flex-end;
-    }
-    .nav a {
-        color: black;
-        text-decoration: underline;
-    }
-    .posts {
-        
-    }
-    .post {
-        display: -webkit-box;   /* OLD - iOS 6-, Safari 3.1-6, BB7 */
-        display: -ms-flexbox;  /* TWEENER - IE 10 */
-        display: -webkit-flex; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
-        display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */
-        margin-bottom: 0.6rem;
-     }
-     .post-title h2 {
-        font-size: 1.5rem;
-        margin-bottom: 0.2rem;
-     }
-     .post-title a {
-        color: black;
-     }
-     .post-line-2 {
-        color: gray;
-     }
-     .post-line-2 a {
-        color: gray;
-        text-decoration: underline;
-     }
-     .post-vote-control {
-        display: -webkit-box;   /* OLD - iOS 6-, Safari 3.1-6, BB7 */
-        display: -ms-flexbox;  /* TWEENER - IE 10 */
-        display: -webkit-flex; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
-        display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */
-        flex-direction: column;
-        -webkit-flex-direction: column;
-        -ms-flex-direction: column;
-        justify-content: space-around;
-        -webkit-justify-content: space-around;
-        -ms-flex-justify-content: space-around;
-        text-align: center;
-        margin-top: 3px;
-        margin-right: 15px;
-     }
-     .vote-button {
-        width: 0;
-        height: 0;
-        border-left: 10px solid transparent;
-        border-right: 10px solid transparent;
-     }
-     .upvote {
-        align-self: flex-start;
-        border-bottom: 15px solid #DDDDDD;
-     }
-     .downvote {
-        align-self: flex-end;
-        border-top: 15px solid #DDDDDD;
-     }
-     .upvote-clicked {
-        align-self: flex-start;
-        border-bottom: 15px solid gray;
-     }
-     .downvote-clicked {
-        align-self: flex-end;
-        border-top: 15px solid gray;
-     }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-    <div class="nav">
-      <div class="logo">
-        Talk@HashedIn
+{% endblock %}
+
+{% block content %}
+<div class="posts">
+  {% for post in posts %}
+    <div class="post">
+      <div class="post-vote-control">
+        <div class="vote-button upvote"></div>
+        <div class="post-votes">2</div>
+        <div class="vote-button downvote"></div>
       </div>
-      <div class="links">
-          <div class="link"><a href="/submit">Submit</a></div>
-          <div class="link"><a href="/profile">Profile</a></div>
-          <div class="link"><a href="/login">Login</a></div>
-      </div>
-    </div>
-    <div class="posts">
-      {% for post in posts %}
-        <div class="post">
-          <div class="post-vote-control">
-            <div class="vote-button upvote"></div>
-            <div class="post-votes">2</div>
-            <div class="vote-button downvote"></div>
-          </div>
-          <div>
-            <div class="post-title">
-              <a href="{{ post.url }}"><h2>{{ post.title }}</h2></a>
-            </div>
-            <div class="post-line-2">
-              <div class="post-score">
-                   by <a href="">{{ post.username }}</a> | 
-                  <a href="">flag</a> | 
-                  <a href="{% url 'discussion' post.id %}">{{ post.num_comments }} comments</a>
-              </div>
-            </div>
+      <div>
+        <div class="post-title">
+          <a href="{{ post.url }}"><h2>{{ post.title }}</h2></a>
+        </div>
+        <div class="post-line-2">
+          <div class="post-score">
+               by <a href="">{{ post.username }}</a> | 
+              <a href="">flag</a> | 
+              <a href="{% url 'discussion' post.id %}">{{ post.num_comments }} comments</a>
           </div>
         </div>
-        {% endfor %}
+      </div>
     </div>
-    </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-  </body>
-</html>
+    {% endfor %}
+</div>
+{% endblock %}

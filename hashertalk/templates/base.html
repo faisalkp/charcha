@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html amp lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+    <title>{% block title %}Talk@HashedIn{% endblock %}</title>
+    <style>
+      html, body, body div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, b, i, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, figure, footer, header, menu, nav, section, time, mark, audio, video, details, summary {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+        font-weight: normal;
+        vertical-align: baseline;
+        background: transparent;
+      }
+
+    article, aside, figure, footer, header, nav, section, details, summary {
+      display: block;
+    }
+    html {
+       box-sizing: border-box; 
+    }
+    *,
+    *:before,
+    *:after {
+       box-sizing: inherit; 
+    }
+    a {
+        text-decoration: none;
+    }
+    .container {
+      padding: 0px 15px;   
+    }
+    .nav {
+        display: -webkit-box;   /* OLD - iOS 6-, Safari 3.1-6, BB7 */
+        display: -ms-flexbox;  /* TWEENER - IE 10 */
+        display: -webkit-flex; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
+        display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */        
+        width: 100vw;
+        margin-left: -15px;
+        background-color: #eeeeee;
+        padding: 10px 15px 10px 15px;
+        margin-bottom: 15px;
+        justify-content: space-between;
+        -webkit-justify-content: space-between;
+        -ms-justify-content: space-between;
+    }
+    .nav .logo {
+        font-size: 1.5rem;
+        color: #ff5722;
+    }
+    .nav .links {
+        display: -webkit-box;   /* OLD - iOS 6-, Safari 3.1-6, BB7 */
+        display: -ms-flexbox;  /* TWEENER - IE 10 */
+        display: -webkit-flex; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
+        display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */        
+        list-style-type: none;
+        margin-left: 10px;
+        font-size: 1.2rem;
+    }
+    .nav .link {
+        padding: 0 10px;
+    }
+    .nav a {
+        color: black;
+        text-decoration: underline;
+    }
+    .posts {
+        
+    }
+    {% block pagecss %}
+    {% endblock %}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+    <div class="nav">
+      <div class="logo">
+        Talk@HashedIn
+      </div>
+      <div class="links">
+          <div class="link"><a href="/submit">Submit</a></div>
+          <div class="link"><a href="/profile">Profile</a></div>
+          <div class="link"><a href="/login">Login</a></div>
+      </div>
+    </div>
+    {% block content %}
+    {% endblock %}
+    </div>
+  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+  <script src="https://intercoolerreleases-leaddynocom.netdna-ssl.com/intercooler-1.1.1.min.js"></script>
+
+  </body>
+</html>
