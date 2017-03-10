@@ -1,0 +1,13 @@
+.project
+.pydevproject
+*.pyc
+build/
+dist/
+jinjasql.egg-info/
+venv
+*.sqlite3
+staticfiles
+.env
+
+*.log.*
+*.log
