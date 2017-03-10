@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.db.models import Count
 from .models import Post
+from django.contrib.auth.decorators import login_required
 
 def homepage(request):
     posts = Post.objects.raw("""
@@ -36,9 +37,11 @@ def homepage(request):
 def discussion(request, page):
     return render(request, "discussion.html", context={"page": page})
 
+@login_required
 def submit(request):
     return render(request, "submit.html", context={})
 
+@login_required
 def myprofile(request):
     return render(request, "profile.html", context={})
 
