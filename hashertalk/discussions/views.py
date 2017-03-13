@@ -1,36 +1,27 @@
+from django.http import HttpResponse, HttpResponseRedirect
+from django.views import View 
+from django import forms
 from django.shortcuts import render
 from django.db.models import F, Count
 from django.db.models.functions import Length
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 from .models import Post, Comment
 
 def homepage(request):
-    posts = Post.objects.annotate(
-                score=F('upvotes')-F('downvotes')
-            ).order_by(
-                "submission_time"
-            )[:50]
-
-    posts = _secret_sorting(posts)
+    posts = Post.objects.annotate(score=F('upvotes')-F('downvotes'))\
+                        .order_by("submission_time")[:50]
     return render(request, "home.html", context={"posts": posts})
 
-def _secret_sorting(posts):
-    """ Our magic algorithm to sort the posts on homepage """
-    return posts
-
-def discussion(request, page):
-    post_id = _extract_page_id(page)
+def discussion(request, post_id):
     post = Post.objects.get(pk=post_id)
     comments = Comment.objects.filter(post=post)\
                     .annotate(indent = (Length('wbs') + 1)/5 )\
                     .order_by("wbs")
     context = {"post": post, "comments": comments}
     return render(request, "discussion.html", context=context)
-
-def _extract_page_id(page):
-    # TODO: Implement SEO friendly URLs 
-    # with post id embedded at the end
-    return page
 
 @login_required
 def submit(request):
@@ -40,8 +31,19 @@ def submit(request):
 def myprofile(request):
     return render(request, "profile.html", context={})
 
-def profile(request, userid):
-    return render(request, "submit.html", context={"user": {"id": userid}})
+class CreateProfileView(View):
+    def post(self, request):
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return HttpResponseRedirect('/')
+        else:
+            return render(request, "registration/create-account.html", {"form": form})
 
-def create_account(request):
-    return render(request, "registration/create-account.html", context={})
+    def get(self, request):
+        form = UserCreationForm()
+        return render(request, "registration/create-account.html", {"form": form})
+
+def profile(request, userid):
+    return render(request, "profile.html", context={"user": {"id": userid}})

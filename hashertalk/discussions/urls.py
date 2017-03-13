@@ -7,6 +7,6 @@ urlpatterns = [
     url(r'^submit/$', views.submit, name="submit"),
     url(r'^profile/me/$', views.myprofile, name="myprofile"),
     url(r'^profile/(.*)/$', views.profile, name="profile"),
-    url(r'^create-account/$', views.create_account, name="create_account"),
+    url(r'^create-profile/$', views.CreateProfileView.as_view(), name="create_profile"),
     
 ]
