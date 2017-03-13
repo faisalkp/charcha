@@ -1,10 +1,111 @@
 {% extends "base.html" %}
-{% block title %}Talk@HashedIn{% endblock %}
+{% load humanize %}
+
+{% block title %}{{ post.title }}{% endblock %}
 
 {% block pagecss %}
+h1 {
+    font-weight: bold;
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+.comment {
+    display: -webkit-box;   /* OLD - iOS 6-, Safari 3.1-6, BB7 */
+    display: -ms-flexbox;  /* TWEENER - IE 10 */
+    display: -webkit-flex; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
+    display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */
+    margin-bottom: 5px;
+    max-width: 960px;
+}
+.indent-1 {
+    
+}
+.indent-2 {
+    margin-left: 40px;
+}
+.indent-3 {
+    margin-left: 80px;
+}
 
+ .vote-control {
+    display: -webkit-box;   /* OLD - iOS 6-, Safari 3.1-6, BB7 */
+    display: -ms-flexbox;  /* TWEENER - IE 10 */
+    display: -webkit-flex; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
+    display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */
+    flex-direction: column;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    justify-content: flex-start;
+    -webkit-justify-content: flex-start;
+    -ms-flex-justify-content: flex-start;
+    text-align: center;
+    margin-top: 3px;
+    margin-right: 15px;
+ }
+ .vote-button {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+ }
+ .upvote {
+    align-self: flex-start;
+    border-bottom: 15px solid #DDDDDD;
+ }
+ .downvote {
+    align-self: flex-end;
+    border-top: 15px solid #DDDDDD;
+ }
+ .upvote-clicked {
+    align-self: flex-start;
+    border-bottom: 15px solid gray;
+ }
+ .downvote-clicked {
+    align-self: flex-end;
+    border-top: 15px solid gray;
+ }
+.comment-header {
+    color: gray;
+}
+.comment-header a {
+    color: gray;
+}
+.comment-text {
+    font-size: 120%;
+    margin-bottom: 5px;
+}
+.comment reply a {
+    color: black;
+    text-decoration: underline;
+}
 {% endblock %}
 
 {% block content %}
- Discussion about {{ page }}
+ <h1>{{ post.title }}</h1>
+
+ <div class="comments">
+  {% for comment in comments %}
+    <div class="comment indent-{{comment.indent}}">
+      <div class="vote-control">
+        <div class="vote-button upvote"></div>
+        <div class="vote-votes">{{ comment.upvotes }}</div>
+        <div class="vote-button downvote"></div>
+      </div>
+      <div>
+        <div class="comment-header">
+          <span class="comment-author">
+            <a href="">{{ comment.author.username }}</a>
+          </span>
+          <span class="comment-submission-time">{{ comment.submission_time | naturaltime }}</span>
+          <a href="javascript:void()" onclick="">[-]</a> 
+        </div>
+        <p class="comment-text">
+            {{ comment.text }}
+        </p>
+        <a class="reply" href="">reply</a>
+      </div>
+    </div>
+  {% endfor %}
+ </div>
+
 {% endblock %}

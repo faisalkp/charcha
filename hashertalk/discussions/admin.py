@@ -6,7 +6,7 @@ class PostAdmin(admin.ModelAdmin):
     list_display = ('title', 'url')
     
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('submission_time', 'author', 'text')
+    list_display = ('submission_time', 'post', 'author', 'text')
 
 class VoteAdmin(admin.ModelAdmin):
     pass

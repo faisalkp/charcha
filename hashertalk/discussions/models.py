@@ -26,25 +26,36 @@ class Vote(models.Model):
         ))
     submission_time = models.DateTimeField(auto_now_add=True)
 
-class Post(models.Model):
+class Votable(models.Model):
+    class Meta:
+        abstract = True
+
+    upvotes = models.IntegerField()
+    downvotes = models.IntegerField()
+    flags = models.IntegerField()
+    votes = GenericRelation(Vote)
+
+class Post(Votable):
     class Meta:
         db_table = "posts"
-
+        index_together = [
+            ["submission_time",],
+        ]
     title = models.CharField(max_length=120)
     url = models.URLField(blank=True)
     text = models.TextField(blank=True, max_length=8192)
     author = models.ForeignKey(User, on_delete=models.PROTECT)
     submission_time = models.DateTimeField(auto_now_add=True)
-    votes = GenericRelation(Vote)
+    num_comments = models.IntegerField()
 
     def __str__(self):
         return self.title
 
-class Comment(models.Model):
+class Comment(Votable):
     class Meta:
         db_table = "comments"
         index_together = [
-            ["post", "parent_comment"],
+            ["post", "wbs"],
         ]
 
     post = models.ForeignKey(Post, related_name="comments")
@@ -54,8 +65,13 @@ class Comment(models.Model):
     text = models.TextField(max_length=8192)
     author = models.ForeignKey(User, on_delete=models.PROTECT)
     submission_time = models.DateTimeField(auto_now_add=True)
-    votes = GenericRelation(Vote)
-
+    
+    # wbs helps us to track the comments as a tree
+    # Format is 0000.0000.0000.0000.0000.0000
+    # This means that:
+    # 1. We only allow 9999 comments at each level
+    # 2. We allow threaded comments upto 6 levels
+    wbs = models.CharField(max_length=29)
 
     def __str__(self):
         return self.text
