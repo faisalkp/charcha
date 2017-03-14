@@ -84,7 +84,7 @@
       <div class="links">
       {% if user.is_authenticated %}
           <div class="link"><a href="{% url "submit" %}">start a discussion</a></div>
-          <div class="link"><a href="{% url "myprofile" %}">profile</a></div>
+          <div class="link"><a href="{% url "myprofile" %}">{{ user.username }}</a></div>
           <div class="link"><a href="{% url "logout" %}">logout</a></div>
       {% else %}
           <div class="link"><a href="{% url "create_profile" %}">signup</a></div>

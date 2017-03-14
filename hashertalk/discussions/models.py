@@ -5,6 +5,11 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+UPVOTE = 1
+DOWNVOTE = 2
+FLAG = 3
+UNFLAG = 4
+
 class Vote(models.Model):
     class Meta:
         db_table = "votes"
@@ -20,9 +25,10 @@ class Vote(models.Model):
     content_object = GenericForeignKey('content_type', 'object_id')
     voter = models.ForeignKey(User, on_delete=models.PROTECT)
     type_of_vote = models.IntegerField(choices = (
-            (1, 'Upvote'),
-            (2, 'Downvote'),
-            (3, 'Flag'),
+            (UPVOTE, 'Upvote'),
+            (DOWNVOTE, 'Downvote'),
+            (FLAG, 'Flag'),
+            (UNFLAG, 'Unflag'),
         ))
     submission_time = models.DateTimeField(auto_now_add=True)
 
@@ -30,11 +36,14 @@ class Votable(models.Model):
     class Meta:
         abstract = True
 
-    upvotes = models.IntegerField()
-    downvotes = models.IntegerField()
-    flags = models.IntegerField()
     votes = GenericRelation(Vote)
 
+    # denormalization to save database queries
+    # score = count(upvotes) - count(downvotes)
+    # flags = count of votes of type "Flag"
+    score = models.IntegerField(default=0)
+    flags = models.IntegerField(default=0)
+    
 class Post(Votable):
     class Meta:
         db_table = "posts"
