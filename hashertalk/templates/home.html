@@ -31,36 +31,49 @@
     flex-direction: column;
     -webkit-flex-direction: column;
     -ms-flex-direction: column;
-    justify-content: space-around;
-    -webkit-justify-content: space-around;
-    -ms-flex-justify-content: space-around;
+    justify-content: flex-start;
+    -webkit-justify-content: flex-start;
+    -ms-flex-justify-content: flex-start;
     text-align: center;
-    margin-top: 3px;
+    margin-top: 5px;
     margin-right: 15px;
  }
  .vote-button {
+    padding: 0;
+    background-color: #fff;
     width: 0;
     height: 0;
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
  }
+ .vote-button:focus {
+    outline:0;
+}
  .upvote {
-    align-self: flex-start;
+    border-top: 0px;
     border-bottom: 15px solid #DDDDDD;
+    cursor: pointer;
+    cursor: hand;
+    margin-bottom:10px;
  }
  .downvote {
-    align-self: flex-end;
     border-top: 15px solid #DDDDDD;
+    border-bottom: 0px;
+    cursor: pointer;
+    cursor: hand;
  }
- .upvote-clicked {
-    align-self: flex-start;
-    border-bottom: 15px solid gray;
+ .upvote[data-state="disabled"], .downvote[data-state="disabled"] {
+    visibility:hidden;
  }
- .downvote-clicked {
-    align-self: flex-end;
-    border-top: 15px solid gray;
+ .upvote[data-state="voted"] {
+    border-top: 0px;
+    border-bottom: 15px solid #ff5722;
  }
-
+ .downvote[data-state="voted"] {
+    border-top: 15px solid #ff5722;
+    border-bottom: 0px;
+ }
+ 
 {% endblock %}
 
 {% block content %}
@@ -71,19 +84,7 @@
 <div class="posts">
   {% for post in posts %}
     <div class="post">
-      <div class="post-vote-control">
-        <a ic-include="#defaults" 
-            ic-target="#post-{{post.id}}-score"
-            ic-post-to="{% url 'upvote_post' post.id %}" 
-            class="vote-button upvote">
-        </a>
-        <div id="post-{{post.id}}-score" class="post-votes">{{ post.score }}</div>
-        <a ic-include="#defaults" 
-            ic-target="#post-{{post.id}}-score"
-            ic-post-to="{% url 'downvote_post' post.id %}" 
-            class="vote-button downvote">
-        </a>
-      </div>
+      {% include 'partials/post-vote-control.html' with post=post only %}
       <div>
         <div class="post-title">
           <a href="{{ post.url }}"><h2>{{ post.title }}</h2></a>
@@ -99,4 +100,49 @@
     </div>
     {% endfor %}
 </div>
+{% endblock %}
+
+{% block before-closing-body %}
+<script>
+$('.vote-button').click(function(){
+    //the button that was clicked (upvote or downvote)
+    var elem = $(this);
+
+    // the div holding upvote and downvote buttons
+    var parent = elem.parent(".post-vote-control")
+    
+    //if upvote button was clicked, sibling is the downvote button
+    var sibling = $(elem.siblings(".vote-button")[0]);
+
+
+    var postid = parent.data("postid");
+    var state = elem.attr("data-state");
+    var isUpvoteButton = elem.hasClass("upvote");
+    var isDownvoteButton = elem.hasClass("downvote");
+    var action;
+    if (isUpvoteButton && state === 'enabled') {
+        action = "upvote";
+    }
+    else if (isDownvoteButton && state === 'enabled') {
+        action = "downvote";
+    }
+    else if (state === 'voted') {
+        action = "undovote";
+    }
+
+    var url = "/api/posts/" + postid + "/" + action;
+
+    $.post(url, {'csrfmiddlewaretoken': "{{csrf_token}}" }).done(function(data){
+        if (action === "upvote" || action === "downvote") {
+            elem.attr("data-state", "voted");
+            sibling.attr("data-state", "disabled");
+        }
+        else if (action === "undovote") {
+            elem.attr("data-state", "enabled");
+            sibling.attr("data-state", "enabled");
+        }
+    });
+});
+
+</script>
 {% endblock %}

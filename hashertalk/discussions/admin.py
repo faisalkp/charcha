@@ -9,7 +9,7 @@ class CommentAdmin(admin.ModelAdmin):
     list_display = ('submission_time', 'post', 'author', 'text')
 
 class VoteAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('content_object', 'voter', 'type_of_vote', 'submission_time')
 
 class FavouriteAdmin(admin.ModelAdmin):
     pass

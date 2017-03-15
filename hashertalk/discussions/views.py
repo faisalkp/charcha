@@ -11,15 +11,53 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.contenttypes.models import ContentType
 
+from django.forms.models import model_to_dict
+
 from .models import Post, Comment, Vote
 from .models import UPVOTE, DOWNVOTE, FLAG, UNFLAG
+
+from collections import defaultdict
 
 def homepage(request):
     posts = Post.objects\
                 .select_related("author")\
-                .order_by("submission_time")[:50]
+                .order_by("submission_time")[:50].values()
+    
+    if request.user.is_authenticated():
+        posts = _append_votes_by_user(posts, request.user)
 
     return render(request, "home.html", context={"posts": posts})
+
+def _append_votes_by_user(posts, user):
+    # Returns a dictionary
+    # key = postid
+    # value = set of votes cast by this user
+    # for example set('downvote', 'flag')
+    post_ids = [p['id'] for p in posts]
+    post_type = ContentType.objects.get_for_model(Post)
+    objects = Vote.objects.\
+                only('object_id', 'type_of_vote').\
+                filter(content_type=post_type.id,
+                    object_id__in=post_ids,
+                    voter=user)
+
+    votes_by_post = defaultdict(set)
+    for obj in objects:
+        vote_type_str = _vote_type_to_string(obj.type_of_vote)
+        votes_by_post[obj.object_id].add(vote_type_str)
+
+    for post in posts:
+        post['votes'] = votes_by_post[post['id']]
+    return posts
+
+def _vote_type_to_string(vote_type):
+    mapping = {
+        UPVOTE: "upvote",
+        DOWNVOTE: "downvote",
+        FLAG: "flag",
+        UNFLAG: "unflag"
+    }
+    return mapping[vote_type]
 
 def discussion(request, post_id):
     post = Post.objects.get(pk=post_id)
@@ -32,33 +70,29 @@ def discussion(request, post_id):
 @login_required
 @require_http_methods(['POST'])
 def upvote_post(request, post_id):
-    new_score, flags = _vote_on_post(request, post_id, UPVOTE)
-    return HttpResponse(new_score)
+    _vote_on_post(request, post_id, UPVOTE)
+    return HttpResponse('OK')
 
 @login_required
 @require_http_methods(['POST'])
 def downvote_post(request, post_id):
-    new_score, flags = _vote_on_post(request, post_id, DOWNVOTE)
-    return HttpResponse(new_score)
+    _vote_on_post(request, post_id, DOWNVOTE)
+    return HttpResponse('OK')
 
 @login_required
 @require_http_methods(['POST'])
-def flag_post(request, post_id):
-    new_score, flags = _vote_on_post(request, post_id, FLAG)
-    return HttpResponse('unflag')
-
-@login_required
-@require_http_methods(['POST'])
-def unflag_post(request, post_id):
-    new_score, flags = _vote_on_post(request, post_id, UNFLAG)
-    return HttpResponse('flag')
-
+def undo_vote_on_post(request, post_id):
+    post_type = ContentType.objects.get_for_model(Post)
+    Vote.objects.filter(content_type=post_type.id,
+            object_id=post_id,\
+            voter=request.user).delete()
+    return HttpResponse('OK')
+    
 def _vote_on_post(request, post_id, type_of_vote):
     post = get_object_or_404(Post, pk=post_id)
 
     if _already_voted(request.user, post, type_of_vote):
-        print("User already voted, ignoring")
-        return post.score, post.flags
+        return
 
     # First, save the vote
     vote = Vote(content_object=post, voter=request.user, type_of_vote=type_of_vote)
@@ -76,13 +110,8 @@ def _vote_on_post(request, post_id, type_of_vote):
     else:
         raise Exception("Invalid type of vote " + type_of_vote)
     post.save()
-
-    # Finally, return either the updated score or the updated flags
-    post = Post.objects.only('score', 'flags').get(pk=post_id)
-    return post.score, post.flags
-
+    
 def _already_voted(user, post, type_of_vote):
-    # TODO: can we cache post_type?
     post_type = ContentType.objects.get_for_model(post)
     return Vote.objects.filter(content_type=post_type.id,
                 object_id=post.id,\
