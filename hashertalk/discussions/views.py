@@ -12,6 +12,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.contenttypes.models import ContentType
 
 from django.forms.models import model_to_dict
+from django.urls import reverse
 
 from .models import Post, Comment, Vote
 from .models import UPVOTE, DOWNVOTE, FLAG, UNFLAG
@@ -59,6 +60,39 @@ def _vote_type_to_string(vote_type):
     }
     return mapping[vote_type]
 
+
+class StartDiscussionForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['title', 'url', 'text']
+
+    def clean(self):
+        cleaned_data = super(StartDiscussionForm, self).clean()
+        url = cleaned_data.get("url")
+        text = cleaned_data.get("text")
+        if not (url or text):
+            raise forms.ValidationError(
+                "URL and Text are both empty. Please enter at least one of them."
+            )
+        return cleaned_data
+
+class StartDiscussionView(View):
+    def get(self, request):
+        form = StartDiscussionForm(initial={"author": request.user})
+        return render(request, "submit.html", context={"form": form})
+
+    def post(self, request):
+        form = StartDiscussionForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+
+            new_post_url = reverse('discussion', args=[post.id])
+            return HttpResponseRedirect(new_post_url)
+        else:
+            return render(request, "submit.html", context={"form": form})
+    
 def discussion(request, post_id):
     post = Post.objects.get(pk=post_id)
     comments = Comment.objects.filter(post=post)\
@@ -118,9 +152,6 @@ def _already_voted(user, post, type_of_vote):
                 voter=user, type_of_vote=type_of_vote)\
             .exists()
 
-@login_required
-def submit(request):
-    return render(request, "submit.html", context={})
 
 @login_required
 def myprofile(request):

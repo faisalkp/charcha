@@ -55,7 +55,7 @@ class Post(Votable):
     text = models.TextField(blank=True, max_length=8192)
     author = models.ForeignKey(User, on_delete=models.PROTECT)
     submission_time = models.DateTimeField(auto_now_add=True)
-    num_comments = models.IntegerField()
+    num_comments = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title

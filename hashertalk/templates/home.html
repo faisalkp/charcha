@@ -130,18 +130,35 @@ $('.vote-button').click(function(){
         action = "undovote";
     }
 
-    var url = "/api/posts/" + postid + "/" + action;
+    // Optimistic UI
+    // First update the UI, assuming that the request will succeed
+    // If the request fails, revert the UI
+    if (action === "upvote" || action === "downvote") {
+        elem.attr("data-state", "voted");
+        sibling.attr("data-state", "disabled");
+    }
+    else if (action === "undovote") {
+        elem.attr("data-state", "enabled");
+        sibling.attr("data-state", "enabled");
+    }
 
-    $.post(url, {'csrfmiddlewaretoken': "{{csrf_token}}" }).done(function(data){
-        if (action === "upvote" || action === "downvote") {
-            elem.attr("data-state", "voted");
-            sibling.attr("data-state", "disabled");
-        }
-        else if (action === "undovote") {
-            elem.attr("data-state", "enabled");
-            sibling.attr("data-state", "enabled");
-        }
-    });
+    var url = "/api/posts/" + postid + "/" + action;
+    
+    $.post(url, {'csrfmiddlewaretoken': "{{csrf_token}}" })
+        .done(function(data){
+            //Nothing to 
+        })
+        .fail(function(data){
+            // Undo the changes we made to the UI, thinking that the request would succeed
+            if (action === "upvote" || action === "downvote") {
+                elem.attr("data-state", "enabled");
+                sibling.attr("data-state", "enabled");
+            }
+            else if (action === "undovote") {
+                elem.attr("data-state", "voted");
+                sibling.attr("data-state", "disabled");
+            }
+        });
 });
 
 </script>
