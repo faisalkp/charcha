@@ -27,6 +27,12 @@ h1 {
     margin-left: 80px;
 }
 
+.post-text {
+    color: gray;
+    font-size: 1.2rem;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
  .vote-control {
     display: -webkit-box;   /* OLD - iOS 6-, Safari 3.1-6, BB7 */
     display: -ms-flexbox;  /* TWEENER - IE 10 */
@@ -81,9 +87,21 @@ h1 {
 {% endblock %}
 
 {% block content %}
- <h1>{{ post.title }}</h1>
 
- <div class="comments">
+  <div class="post-title">
+    <a href="{{ post.url }}"><h2>{{ post.title }}</h2></a>
+  </div>
+  <div class="post-line-2">
+    <div class="post-score">
+       by <a href="">{{ post.author.username }}</a> | 
+      <a href="">flag</a> | 
+      <a href="{% url 'discussion' post.id %}">{{ post.num_comments }} comments</a>
+    </div>
+  </div>
+  <div class="post-text">
+    <p>{{post.text}}</p>
+  </div>
+  <div class="comments">
   {% for comment in comments %}
     <div class="comment indent-{{comment.indent}}">
       <div class="vote-control">
@@ -102,7 +120,7 @@ h1 {
         <p class="comment-text">
             {{ comment.text }}
         </p>
-        <a class="reply" href="">reply</a>
+        <a class="reply" href="{% url 'reply_to_comment' comment.id %}">reply</a>
       </div>
     </div>
   {% endfor %}

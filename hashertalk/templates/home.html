@@ -2,78 +2,7 @@
 {% block title %}Talk@HashedIn{% endblock %}
 
 {% block pagecss %}
-.post {
-    display: -webkit-box;   /* OLD - iOS 6-, Safari 3.1-6, BB7 */
-    display: -ms-flexbox;  /* TWEENER - IE 10 */
-    display: -webkit-flex; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
-    display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */
-    margin-bottom: 0.6rem;
- }
- .post-title h2 {
-    font-size: 1.5rem;
-    margin-bottom: 0.2rem;
- }
- .post-title a {
-    color: black;
- }
- .post-line-2 {
-    color: gray;
- }
- .post-line-2 a {
-    color: gray;
-    text-decoration: underline;
- }
- .post-vote-control {
-    display: -webkit-box;   /* OLD - iOS 6-, Safari 3.1-6, BB7 */
-    display: -ms-flexbox;  /* TWEENER - IE 10 */
-    display: -webkit-flex; /* NEW - Safari 6.1+. iOS 7.1+, BB10 */
-    display: flex;         /* NEW, Spec - Firefox, Chrome, Opera */
-    flex-direction: column;
-    -webkit-flex-direction: column;
-    -ms-flex-direction: column;
-    justify-content: flex-start;
-    -webkit-justify-content: flex-start;
-    -ms-flex-justify-content: flex-start;
-    text-align: center;
-    margin-top: 5px;
-    margin-right: 15px;
- }
- .vote-button {
-    padding: 0;
-    background-color: #fff;
-    width: 0;
-    height: 0;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
- }
- .vote-button:focus {
-    outline:0;
-}
- .upvote {
-    border-top: 0px;
-    border-bottom: 15px solid #DDDDDD;
-    cursor: pointer;
-    cursor: hand;
-    margin-bottom:10px;
- }
- .downvote {
-    border-top: 15px solid #DDDDDD;
-    border-bottom: 0px;
-    cursor: pointer;
-    cursor: hand;
- }
- .upvote[data-state="disabled"], .downvote[data-state="disabled"] {
-    visibility:hidden;
- }
- .upvote[data-state="voted"] {
-    border-top: 0px;
-    border-bottom: 15px solid #ff5722;
- }
- .downvote[data-state="voted"] {
-    border-top: 15px solid #ff5722;
-    border-bottom: 0px;
- }
- 
+
 {% endblock %}
 
 {% block content %}
@@ -84,14 +13,36 @@
 <div class="posts">
   {% for post in posts %}
     <div class="post">
-      {% include 'partials/post-vote-control.html' with post=post only %}
-      <div>
+    <div data-postid="{{post.id}}" class="vote-control">
+      {% if 'upvote' in post.votes and 'downvote' in post.votes %}
+      <button class="vote-button upvote" data-state="voted"></button>
+      <button class="vote-button downvote" data-state="voted"></button>
+      {% elif 'upvote' in post.votes %}
+      <button class="vote-button upvote" data-state="voted"></button>
+      <button class="vote-button downvote" data-state="disabled"></button>
+      {% elif 'downvote' in post.votes %}
+      <button class="vote-button upvote" data-state="disabled"></button>
+      <button class="vote-button downvote" data-state="voted"></button>
+      {% else %}
+      <button class="vote-button upvote" data-state="enabled"></button>
+      <button class="vote-button downvote" data-state="enabled">
+      </button>
+      {% endif %}
+    </div>
+    <div>
         <div class="post-title">
-          <a href="{{ post.url }}"><h2>{{ post.title }}</h2></a>
+          {% if post.url %}
+            <a href="{{ post.url }}">
+          {% else %}
+            <a href="{% url 'discussion' post.id %}">
+          {% endif %}
+                <h2>{{ post.title }}</h2>
+            </a>
+
         </div>
         <div class="post-line-2">
           <div class="post-score">
-               by <a href="">{{ post.username }}</a> | 
+               by <a href="">{{ post.author.username }}</a> | 
               <a href="">flag</a> | 
               <a href="{% url 'discussion' post.id %}">{{ post.num_comments }} comments</a>
           </div>
@@ -109,7 +60,7 @@ $('.vote-button').click(function(){
     var elem = $(this);
 
     // the div holding upvote and downvote buttons
-    var parent = elem.parent(".post-vote-control")
+    var parent = elem.parent(".vote-control")
     
     //if upvote button was clicked, sibling is the downvote button
     var sibling = $(elem.siblings(".vote-button")[0]);

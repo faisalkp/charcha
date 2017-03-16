@@ -63,7 +63,7 @@ class Post(Votable):
 class Comment(Votable):
     class Meta:
         db_table = "comments"
-        index_together = [
+        unique_together = [
             ["post", "wbs"],
         ]
 

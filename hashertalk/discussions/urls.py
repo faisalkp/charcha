@@ -9,6 +9,9 @@ urlpatterns = [
     url(r'^profile/(.*)/$', views.profile, name="profile"),
     url(r'^create-profile/$', views.CreateProfileView.as_view(), name="create_profile"),
 
+    url(r'^discuss/(?P<id>\d+)/reply$', views.CommentOnPost.as_view(), name="comment_on_post"),
+    url(r'^comments/(?P<id>\d+)/reply$', views.ReplyToComment.as_view(), name="reply_to_comment"),
+
     url(r'^api/posts/(?P<post_id>\d+)/upvote$', views.upvote_post, name="upvote_post"),
     url(r'^api/posts/(?P<post_id>\d+)/downvote$', views.downvote_post, name="downvote_post"),
     url(r'^api/posts/(?P<post_id>\d+)/undovote$', views.undo_vote_on_post, name="undo_vote_on_post"),

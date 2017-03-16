@@ -6,7 +6,7 @@ class PostAdmin(admin.ModelAdmin):
     list_display = ('title', 'url')
     
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('submission_time', 'post', 'author', 'text')
+    list_display = ('submission_time', 'post', 'wbs', 'author', 'text')
 
 class VoteAdmin(admin.ModelAdmin):
     list_display = ('content_object', 'voter', 'type_of_vote', 'submission_time')

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Reply to Comment{% endblock %}
+
+{% block content %}
+<h2>You are replying to: {{ parent_comment.text | truncatechars:100}}</h2>
+<h2>In thread: {{ post.title | truncatechars:100}}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit" />
+</form>
+
+{% endblock %}

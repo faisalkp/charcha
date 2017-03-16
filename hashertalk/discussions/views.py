@@ -60,6 +60,65 @@ def _vote_type_to_string(vote_type):
     }
     return mapping[vote_type]
 
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['text']
+
+class CommentOnPost(View):
+    def get(self, request, **kwargs):
+        pass
+
+    def post(self, request, **kwargs):
+        pass
+
+class ReplyToComment(View):
+    def get(self, request, **kwargs):
+        parent_comment = get_object_or_404(Comment, pk=kwargs['id'])
+        post = parent_comment.post
+        form = CommentForm()
+        context = {"post": post, "parent_comment": parent_comment, "form": form}
+        return render(request, "reply-to-comment.html", context=context)
+
+    def post(self, request, **kwargs):
+        parent_comment = get_object_or_404(Comment, pk=kwargs['id'])
+        post = parent_comment.post
+        form = CommentForm(request.POST)
+        context = {"post": post, "parent_comment": parent_comment, "form": form}
+        
+        if not form.is_valid():
+            return render(request, "reply-to-comment.html", context=context)
+
+        comment = form.save(commit=False)
+        comment.post = post
+        comment.parent_comment = parent_comment
+        comment.wbs = self._find_next_wbs(post, parent_comment.wbs)
+        comment.author = request.user
+        comment.save()
+
+        post_url = reverse('discussion', args=[post.id])
+        return HttpResponseRedirect(post_url)
+
+    def _find_next_wbs(self, post, parent_wbs):
+        comments = Comment.objects.raw("""
+            SELECT id, max(wbs) as wbs from comments 
+            WHERE post_id = %s and wbs like %s
+            and length(wbs) = %s
+            ORDER BY wbs desc
+            limit 1
+            """, [post.id, parent_wbs + ".%", len(parent_wbs) + 5])
+
+        comment = None
+        for c in comments:
+            comment = c
+
+        if not comment:
+            return "%s.%s" % (parent_wbs, "0000")
+        else:
+            print(comment)
+            last_wbs = comment.wbs.split(".")[-1]
+            next_wbs = int(last_wbs) + 1
+            return '{0:04d}'.format(next_wbs)
 
 class StartDiscussionForm(forms.ModelForm):
     class Meta:
@@ -121,7 +180,7 @@ def undo_vote_on_post(request, post_id):
             object_id=post_id,\
             voter=request.user).delete()
     return HttpResponse('OK')
-    
+
 def _vote_on_post(request, post_id, type_of_vote):
     post = get_object_or_404(Post, pk=post_id)
 
