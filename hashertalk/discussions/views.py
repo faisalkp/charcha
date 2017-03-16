@@ -114,11 +114,14 @@ class ReplyToComment(View):
 
         if not comment:
             return "%s.%s" % (parent_wbs, "0000")
+        elif not comment.wbs:
+            return "%s.%s" % (parent_wbs, "0000")
         else:
-            print(comment)
-            last_wbs = comment.wbs.split(".")[-1]
+            wbs_code = comment.wbs
+            first_wbs = wbs_code[:-4]
+            last_wbs = wbs_code.split(".")[-1]
             next_wbs = int(last_wbs) + 1
-            return '{0:04d}'.format(next_wbs)
+            return first_wbs + '{0:04d}'.format(next_wbs)
 
 class StartDiscussionForm(forms.ModelForm):
     class Meta:
