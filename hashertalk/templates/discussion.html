@@ -17,9 +17,10 @@
           </div>
           <div class="post-line-2">
             <div class="post-score">
-               by <a href="">{{ post.author.username }}</a> | 
+               by {{ post.author.username }} | 
               {{ post.score }} points | 
-              {{ comments|length }} comments
+              {{ comments|length }} comment{{ comments | length | pluralize }} |
+              {{ post.submission_time | naturaltime }}
             </div>
           </div>
           {% if post.text %}
@@ -46,10 +47,10 @@
       <div>
         <div class="comment-header">
           <span class="comment-author">
-            <a href="">{{ comment.author.username }}</a>
+            by {{ comment.author.username }}
           </span>
+          <span>|</span>
           <span class="comment-submission-time">{{ comment.submission_time | naturaltime }}</span>
-          <a href="javascript:void()" onclick="">[-]</a> 
         </div>
         <p class="comment-text">
             {{ comment.text }}
