@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% load humanize %}
 
-{% block title %}{{ post.title }}{% endblock %}
+{% block title %}{{ post.title }} | Charcha{% endblock %}
 
 {% block content %}
-
+<div class="container-fluid">
   <div class="post">
       <div class="vote-control">
         <div class="vote-button upvote"></div>
@@ -30,10 +30,10 @@
           </div>
           {% endif %}
           <form>
-            <div>
-              <textarea rows="10" cols="80"></textarea>
+            <div class="form-group">
+              <textarea class="form-control" rows="10"></textarea>
             </div>
-            <input type="submit" value="Add Comment" />
+            <button type="submit" class="btn btn-default">Add Comment</button>
           </form>
       </div>
   </div>
@@ -41,7 +41,7 @@
   {% for comment in comments %}
     <div class="comment indent-{{comment.indent}}">
       <div class="vote-control">
-        <div class="vote-button upvote"></div>
+        <div class="vote-button upvote" data-toggle="tooltip" data-placement="left" title="Tooltip on left"></div>
         <div class="vote-votes">{{ comment.upvotes }}</div>
         <div class="vote-button downvote"></div>
       </div>
@@ -61,5 +61,5 @@
     </div>
   {% endfor %}
  </div>
-
+</div>
 {% endblock %}

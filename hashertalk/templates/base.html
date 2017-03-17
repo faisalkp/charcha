@@ -45,11 +45,17 @@
         margin-bottom: 1rem;
      }
      .post-title h1, .post-title h2 {
-        margin: 0;
-     }
-     .post-title h2 {
         font-size: 2rem;
+        margin-top: 0;
+        margin-bottom: 0.4rem;
      }
+     .post-line-2, .post-line-2 a {
+        color: gray;
+     }
+     .post-line-2 {
+        margin-bottom: 0.4rem;
+     }
+
      .vote-control {
         display: -webkit-box;   /* OLD - iOS 6-, Safari 3.1-6, BB7 */
         display: -ms-flexbox;  /* TWEENER - IE 10 */
@@ -119,9 +125,6 @@
     .indent-3 {
         margin-left: 80px;
     }
-    .post-line-2, .post-line-2 a {
-        color: gray;
-    }
     .comment-text {
         margin-bottom: 5px;
     }
@@ -171,10 +174,8 @@
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
-<div class="container-fluid">
-    {% block content %}
-    {% endblock %}
-</div>
+{% block content %}
+{% endblock %}
   <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   {% block before-closing-body %}{% endblock %}
