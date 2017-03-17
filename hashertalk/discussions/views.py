@@ -22,7 +22,7 @@ from collections import defaultdict
 def homepage(request):
     posts = Post.objects\
                 .select_related("author")\
-                .order_by("submission_time")[:50].values()
+                .order_by("-submission_time")[:50]
     
     if request.user.is_authenticated():
         posts = _append_votes_by_user(posts, request.user)
@@ -34,7 +34,7 @@ def _append_votes_by_user(posts, user):
     # key = postid
     # value = set of votes cast by this user
     # for example set('downvote', 'flag')
-    post_ids = [p['id'] for p in posts]
+    post_ids = [p.id for p in posts]
     post_type = ContentType.objects.get_for_model(Post)
     objects = Vote.objects.\
                 only('object_id', 'type_of_vote').\
@@ -47,9 +47,14 @@ def _append_votes_by_user(posts, user):
         vote_type_str = _vote_type_to_string(obj.type_of_vote)
         votes_by_post[obj.object_id].add(vote_type_str)
 
-    for post in posts:
-        post['votes'] = votes_by_post[post['id']]
-    return posts
+    posts_as_list = []
+    for p in posts:
+        post = model_to_dict(p)
+        post['submission_time'] = p.submission_time
+        post['author'] = p.author.username
+        post['votes'] = votes_by_post[p.id]
+        posts_as_list.append(post)
+    return posts_as_list
 
 def _vote_type_to_string(vote_type):
     mapping = {
@@ -64,6 +69,9 @@ class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ['text']
+        labels = {
+            'text': 'Your Comment',
+        }
 
 class CommentOnPost(View):
     def get(self, request, **kwargs):
@@ -126,7 +134,15 @@ class ReplyToComment(View):
 class StartDiscussionForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['title', 'url', 'text']
+        fields = ['title', 'text']
+        labels = {
+            'title': 'Title',
+            'text': 'Details'
+        }
+        help_text = {
+            'title': 'Title',
+            'text': 'Markdown syntax allowed'
+        }
 
     def clean(self):
         cleaned_data = super(StartDiscussionForm, self).clean()

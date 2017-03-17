@@ -13,15 +13,13 @@
       </div>
       <div>
           <div class="post-title">
-            <a href="{{ post.url }}"><h2>{{ post.title }}</h2></a>
+            <h2>{{ post.title }}</h2>
           </div>
           <div class="post-line-2">
             <div class="post-score">
                by <a href="">{{ post.author.username }}</a> | 
               {{ post.score }} points | 
-              {{ comments|length }} comments |
-              <a href="">flag</a> | 
-              <a href="">favourite</a>
+              {{ comments|length }} comments
             </div>
           </div>
           {% if post.text %}

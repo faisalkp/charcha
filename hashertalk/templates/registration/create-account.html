@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load bootstrap3 %}
+{% load bootstrap %}
 {% block content %}
 
 <div class="container-fluid">
@@ -9,10 +9,10 @@
 
 <form action="/create-profile/" method="post">
     {% csrf_token %}
-    {% bootstrap_form form %}
-    {% buttons %}
+    {{ form|bootstrap }}
+    
     <button type="submit" class="btn btn-default">Create Account</button>
-    {% endbuttons %}
+    
 </form>
 </div>
 </div>

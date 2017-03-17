@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load humanize %}
 {% block title %}Charcha{% endblock %}
 
 {% block content %}
@@ -29,20 +29,16 @@
     </div>
     <div>
         <div class="post-title">
-          {% if post.url %}
-            <a href="{{ post.url }}">
-          {% else %}
             <a href="{% url 'discussion' post.id %}">
-          {% endif %}
-                <h2>{{ post.title }}</h2>
+              <h2>{{ post.title }}</h2>
             </a>
 
         </div>
         <div class="post-line-2">
           <div class="post-score">
-               by <a href="">{{ post.author.username }}</a> | 
-              <a href="">flag</a> | 
-              <a href="{% url 'discussion' post.id %}">{{ post.num_comments }} comments</a>
+               by <a href="">{{ post.author }}</a> | 
+              {{ post.num_comments }} comment{{ post.num_comments|pluralize }} |
+              {{ post.submission_time | naturaltime }}
           </div>
         </div>
       </div>
@@ -50,66 +46,4 @@
     {% endfor %}
 </div>
 </div>
-{% endblock %}
-
-{% block before-closing-body %}
-<script>
-$('.vote-button').click(function(){
-    //the button that was clicked (upvote or downvote)
-    var elem = $(this);
-
-    // the div holding upvote and downvote buttons
-    var parent = elem.parent(".vote-control")
-    
-    //if upvote button was clicked, sibling is the downvote button
-    var sibling = $(elem.siblings(".vote-button")[0]);
-
-
-    var postid = parent.data("postid");
-    var state = elem.attr("data-state");
-    var isUpvoteButton = elem.hasClass("upvote");
-    var isDownvoteButton = elem.hasClass("downvote");
-    var action;
-    if (isUpvoteButton && state === 'enabled') {
-        action = "upvote";
-    }
-    else if (isDownvoteButton && state === 'enabled') {
-        action = "downvote";
-    }
-    else if (state === 'voted') {
-        action = "undovote";
-    }
-
-    // Optimistic UI
-    // First update the UI, assuming that the request will succeed
-    // If the request fails, revert the UI
-    if (action === "upvote" || action === "downvote") {
-        elem.attr("data-state", "voted");
-        sibling.attr("data-state", "disabled");
-    }
-    else if (action === "undovote") {
-        elem.attr("data-state", "enabled");
-        sibling.attr("data-state", "enabled");
-    }
-
-    var url = "/api/posts/" + postid + "/" + action;
-    
-    $.post(url, {'csrfmiddlewaretoken': "{{csrf_token}}" })
-        .done(function(data){
-            //Nothing to 
-        })
-        .fail(function(data){
-            // Undo the changes we made to the UI, thinking that the request would succeed
-            if (action === "upvote" || action === "downvote") {
-                elem.attr("data-state", "enabled");
-                sibling.attr("data-state", "enabled");
-            }
-            else if (action === "undovote") {
-                elem.attr("data-state", "voted");
-                sibling.attr("data-state", "disabled");
-            }
-        });
-});
-
-</script>
 {% endblock %}
