@@ -74,9 +74,6 @@ class CommentForm(forms.ModelForm):
         }
 
 class CommentOnPost(View):
-    def get(self, request, **kwargs):
-        pass
-
     def post(self, request, **kwargs):
         pass
 
@@ -172,8 +169,9 @@ class StartDiscussionView(View):
             return render(request, "submit.html", context={"form": form})
     
 def discussion(request, post_id):
-    post = Post.objects.get(pk=post_id)
+    post = Post.objects.select_related("author").get(pk=post_id)
     comments = Comment.objects.filter(post=post)\
+                    .select_related("author")\
                     .annotate(indent = (Length('wbs') + 1)/5 )\
                     .order_by("wbs")
     context = {"post": post, "comments": comments}

@@ -1,14 +1,18 @@
 {% extends "base.html" %}
 {% load bootstrap %}
+{% load markdown %}
 {% block title %}Reply to Comment{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
 
 <h1>Replying to:</h1>
+
+<div class="comment-text">
 <p>
-<i>{{ parent_comment.text | truncatechars:300}}</i>
+{{ parent_comment.text | truncatechars:200 | markdown }}
 </p>
+</div>
 
 <div class="row">
 <div class="col-md-4 col-sm-6">

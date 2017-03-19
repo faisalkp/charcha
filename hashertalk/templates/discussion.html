@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load humanize %}
+{% load markdown %}
 
 {% block title %}{{ post.title }} | Charcha{% endblock %}
 
@@ -25,10 +26,11 @@
           </div>
           {% if post.text %}
           <div class="post-text">
-            <p>{{post.text}}</p>
+            <p>{{post.text | markdown}}</p>
           </div>
           {% endif %}
-          <form>
+          <form method="post" action="">
+            {% csrf_token %}
             <div class="form-group">
               <textarea class="form-control" rows="10"></textarea>
             </div>
@@ -52,9 +54,11 @@
           <span>|</span>
           <span class="comment-submission-time">{{ comment.submission_time | naturaltime }}</span>
         </div>
-        <p class="comment-text">
-            {{ comment.text }}
-        </p>
+        <div class="comment-text">
+          <p>
+              {{ comment.text | markdown}}
+          </p>
+        </div>
         <a class="reply" href="{% url 'reply_to_comment' comment.id %}">reply</a>
       </div>
     </div>
