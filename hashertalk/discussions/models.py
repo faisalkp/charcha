@@ -4,11 +4,11 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models import F
 
 UPVOTE = 1
 DOWNVOTE = 2
 FLAG = 3
-UNFLAG = 4
 
 class Vote(models.Model):
     class Meta:
@@ -28,7 +28,6 @@ class Vote(models.Model):
             (UPVOTE, 'Upvote'),
             (DOWNVOTE, 'Downvote'),
             (FLAG, 'Flag'),
-            (UNFLAG, 'Unflag'),
         ))
     submission_time = models.DateTimeField(auto_now_add=True)
 
@@ -44,6 +43,65 @@ class Votable(models.Model):
     score = models.IntegerField(default=0)
     flags = models.IntegerField(default=0)
     
+    def upvote(self, user):
+        self._vote(user, UPVOTE)
+    
+    def downvote(self, user):
+        self._vote(user, DOWNVOTE)
+    
+    def flag(self, user):
+        self._vote(user, FLAG)
+
+    def unflag(self, user):
+        raise Exception("not yet implemented")
+
+    def undo_vote(self, user):
+        content_type = ContentType.objects.get_for_model(self)
+        votes = Vote.objects.filter(content_type=content_type.id,
+            object_id=self.id, type_of_vote__in=(UPVOTE, DOWNVOTE),
+            voter=user)
+        
+        upvotes = 0
+        downvotes = 0
+        for v in votes:
+            if v.type_of_vote == UPVOTE:
+                upvotes = upvotes + 1
+            elif v.type_of_vote == DOWNVOTE:
+                downvotes = downvotes + 1
+            else:
+                raise Exception("Invalid state, logic bug in undo_vote")
+            v.delete()
+
+        self.score = F('score') - upvotes + downvotes
+        self.save()
+    
+    def _vote(self, user, type_of_vote):
+        content_type = ContentType.objects.get_for_model(self)
+        if self._already_voted(user, content_type, type_of_vote):
+            return
+
+        # First, save the vote
+        vote = Vote(content_object=self, voter=user, 
+            type_of_vote=type_of_vote)
+        vote.save()
+
+        # Next, update our denormalized columns - flags and score
+        if type_of_vote == FLAG:
+            self.flags = F('flags') + 1
+        elif type_of_vote == UPVOTE:
+            self.score = F('score') + 1
+        elif type_of_vote == DOWNVOTE:
+            self.score = F('score') - 1
+        else:
+            raise Exception("Invalid type of vote " + type_of_vote)
+        self.save()
+
+    def _already_voted(self, user, content_type, type_of_vote):
+        return Vote.objects.filter(content_type=content_type.id,
+                    object_id=self.id,\
+                    voter=user, type_of_vote=type_of_vote)\
+                .exists()
+
 class Post(Votable):
     class Meta:
         db_table = "posts"

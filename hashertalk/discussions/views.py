@@ -3,7 +3,6 @@ from django.views import View
 from django.views.decorators.http import require_http_methods
 from django import forms
 from django.shortcuts import render, get_object_or_404
-from django.db.models import F, Count
 from django.db.models.functions import Length
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -14,8 +13,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.forms.models import model_to_dict
 from django.urls import reverse
 
+from .models import UPVOTE, DOWNVOTE, FLAG
 from .models import Post, Comment, Vote
-from .models import UPVOTE, DOWNVOTE, FLAG, UNFLAG
 
 from collections import defaultdict
 
@@ -60,8 +59,7 @@ def _vote_type_to_string(vote_type):
     mapping = {
         UPVOTE: "upvote",
         DOWNVOTE: "downvote",
-        FLAG: "flag",
-        UNFLAG: "unflag"
+        FLAG: "flag"
     }
     return mapping[vote_type]
 
@@ -206,53 +204,44 @@ class StartDiscussionView(View):
 @login_required
 @require_http_methods(['POST'])
 def upvote_post(request, post_id):
-    _vote_on_post(request, post_id, UPVOTE)
+    post = get_object_or_404(Post, pk=post_id)
+    post.upvote(request.user)
     return HttpResponse('OK')
 
 @login_required
 @require_http_methods(['POST'])
 def downvote_post(request, post_id):
-    _vote_on_post(request, post_id, DOWNVOTE)
+    post = get_object_or_404(Post, pk=post_id)
+    post.downvote(request.user)
     return HttpResponse('OK')
 
 @login_required
 @require_http_methods(['POST'])
 def undo_vote_on_post(request, post_id):
-    post_type = ContentType.objects.get_for_model(Post)
-    Vote.objects.filter(content_type=post_type.id,
-            object_id=post_id,\
-            voter=request.user).delete()
+    post = get_object_or_404(Post, pk=post_id)
+    post.undo_vote(request.user)
     return HttpResponse('OK')
 
-def _vote_on_post(request, post_id, type_of_vote):
-    post = get_object_or_404(Post, pk=post_id)
+@login_required
+@require_http_methods(['POST'])
+def upvote_comment(request, comment_id):
+    comment = get_object_or_404(Comment, pk=comment_id)
+    comment.upvote(request.user)
+    return HttpResponse('OK')
 
-    if _already_voted(request.user, post, type_of_vote):
-        return
+@login_required
+@require_http_methods(['POST'])
+def downvote_comment(request, comment_id):
+    comment = get_object_or_404(Comment, pk=comment_id)
+    comment.downvote(request.user)
+    return HttpResponse('OK')
 
-    # First, save the vote
-    vote = Vote(content_object=post, voter=request.user, type_of_vote=type_of_vote)
-    vote.save()
-
-    # Next, update our denormalized columns - flags and score
-    if type_of_vote == FLAG:
-        post.flags = F('flags') + 1
-    elif type_of_vote == UNFLAG:
-        post.flags = F('flags') - 1 
-    elif type_of_vote == UPVOTE:
-        post.score = F('score') + 1
-    elif type_of_vote == DOWNVOTE:
-        post.score = F('score') - 1
-    else:
-        raise Exception("Invalid type of vote " + type_of_vote)
-    post.save()
-    
-def _already_voted(user, post, type_of_vote):
-    post_type = ContentType.objects.get_for_model(post)
-    return Vote.objects.filter(content_type=post_type.id,
-                object_id=post.id,\
-                voter=user, type_of_vote=type_of_vote)\
-            .exists()
+@login_required
+@require_http_methods(['POST'])
+def undo_vote_on_comment(request, comment_id):
+    comment = get_object_or_404(Comment, pk=comment_id)
+    comment.undo_vote(request.user)
+    return HttpResponse('OK')
 
 @login_required
 def myprofile(request):

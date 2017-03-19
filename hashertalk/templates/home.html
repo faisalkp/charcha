@@ -11,7 +11,7 @@
 <div class="posts">
   {% for post in posts %}
     <div class="post">
-    <div data-postid="{{post.id}}" class="vote-control">
+    <div data-object-type="posts" data-object-id="{{post.id}}" class="vote-control">
       {% if 'upvote' in post.votes and 'downvote' in post.votes %}
       <button class="vote-button upvote" data-state="voted"></button>
       <button class="vote-button downvote" data-state="voted"></button>

@@ -14,5 +14,9 @@ urlpatterns = [
     url(r'^api/posts/(?P<post_id>\d+)/upvote$', views.upvote_post, name="upvote_post"),
     url(r'^api/posts/(?P<post_id>\d+)/downvote$', views.downvote_post, name="downvote_post"),
     url(r'^api/posts/(?P<post_id>\d+)/undovote$', views.undo_vote_on_post, name="undo_vote_on_post"),
+
+    url(r'^api/comments/(?P<comment_id>\d+)/upvote$', views.upvote_comment, name="upvote_comment"),
+    url(r'^api/comments/(?P<comment_id>\d+)/downvote$', views.downvote_comment, name="downvote_comment"),
+    url(r'^api/comments/(?P<comment_id>\d+)/undovote$', views.undo_vote_on_comment, name="undo_vote_on_comment"),
     
 ]

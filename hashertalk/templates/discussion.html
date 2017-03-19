@@ -8,10 +8,9 @@
 {% block content %}
 <div class="container-fluid">
   <div class="post">
-      <div class="vote-control">
-        <div class="vote-button upvote"></div>
-        <div class="vote-votes">{{ comment.upvotes }}</div>
-        <div class="vote-button downvote"></div>
+      <div data-object-type="posts" data-object-id="{{post.id}}" class="vote-control">
+        <div data-state="enabled" class="vote-button upvote"></div>
+        <div data-state="enabled" class="vote-button downvote"></div>
       </div>
       <div>
           <div class="post-title">
@@ -40,10 +39,9 @@
   <div class="comments">
   {% for comment in comments %}
     <div class="comment indent-{{comment.indent}}">
-      <div class="vote-control">
-        <div class="vote-button upvote" data-toggle="tooltip" data-placement="left" title="Tooltip on left"></div>
-        <div class="vote-votes">{{ comment.upvotes }}</div>
-        <div class="vote-button downvote"></div>
+      <div data-object-type="comments" data-object-id="{{comment.id}}" class="vote-control">
+        <div data-state="enabled" class="vote-button upvote"></div>
+        <div data-state="enabled" class="vote-button downvote"></div>
       </div>
       <div>
         <div class="comment-header">
