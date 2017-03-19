@@ -3,13 +3,12 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.homepage, name="home"),
-    url(r'^discuss/(.*)/$', views.discussion, name="discussion"),
+    url(r'^discuss/(?P<post_id>\d+)/$', views.DiscussionView.as_view(), name="discussion"),
     url(r'^start-discussion/$', views.StartDiscussionView.as_view(), name="start-discussion"),
     url(r'^profile/me/$', views.myprofile, name="myprofile"),
     url(r'^profile/(.*)/$', views.profile, name="profile"),
     url(r'^create-profile/$', views.CreateProfileView.as_view(), name="create_profile"),
 
-    url(r'^discuss/(?P<id>\d+)/reply$', views.CommentOnPost.as_view(), name="comment_on_post"),
     url(r'^comments/(?P<id>\d+)/reply$', views.ReplyToComment.as_view(), name="reply_to_comment"),
 
     url(r'^api/posts/(?P<post_id>\d+)/upvote$', views.upvote_post, name="upvote_post"),

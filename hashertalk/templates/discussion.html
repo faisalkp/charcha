@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load humanize %}
+{% load bootstrap %}
 {% load markdown %}
 
 {% block title %}{{ post.title }} | Charcha{% endblock %}
@@ -31,9 +32,7 @@
           {% endif %}
           <form method="post" action="">
             {% csrf_token %}
-            <div class="form-group">
-              <textarea class="form-control" rows="10"></textarea>
-            </div>
+            {{ form | bootstrap }}
             <button type="submit" class="btn btn-default">Add Comment</button>
           </form>
       </div>

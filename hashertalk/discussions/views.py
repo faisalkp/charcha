@@ -73,9 +73,28 @@ class CommentForm(forms.ModelForm):
             'text': 'Your Comment',
         }
 
-class CommentOnPost(View):
-    def post(self, request, **kwargs):
-        pass
+class DiscussionView(View):
+    def get(self, request, post_id):
+        post = Post.objects.select_related("author").get(pk=post_id)
+        comments = Comment.objects.filter(post=post)\
+                        .select_related("author")\
+                        .annotate(indent = (Length('wbs') + 1)/5 )\
+                        .order_by("wbs")
+        form = CommentForm()
+        context = {"post": post, "comments": comments, "form": form}
+        return render(request, "discussion.html", context=context)
+
+    def post(self, request, post_id):
+        post = Post.objects.select_related("author").get(pk=post_id)
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment = _add_comment(comment, post, None, request.user)
+            post_url = reverse('discussion', args=[post.id])
+            return HttpResponseRedirect(post_url)
+        else:
+            context = {"post": post, "form": form, "comments": []}
+            return render(request, "discussion.html", context=context)
 
 class ReplyToComment(View):
     def get(self, request, **kwargs):
@@ -95,16 +114,24 @@ class ReplyToComment(View):
             return render(request, "reply-to-comment.html", context=context)
 
         comment = form.save(commit=False)
-        comment.post = post
-        comment.parent_comment = parent_comment
-        comment.wbs = self._find_next_wbs(post, parent_comment.wbs)
-        comment.author = request.user
-        comment.save()
+        comment = _add_comment(comment, post, parent_comment, request.user)
 
         post_url = reverse('discussion', args=[post.id])
         return HttpResponseRedirect(post_url)
 
-    def _find_next_wbs(self, post, parent_wbs):
+def _add_comment(comment, post, parent_comment, author):
+    comment.post = post
+    if parent_comment:
+        comment.parent_comment = parent_comment
+        comment.wbs = _find_next_wbs(post, parent_wbs=parent_comment.wbs)
+    else:
+        comment.wbs = _find_next_wbs(post)
+    comment.author = author
+    comment.save()
+    return comment
+
+def _find_next_wbs(post, parent_wbs=None):
+    if parent_wbs:
         comments = Comment.objects.raw("""
             SELECT id, max(wbs) as wbs from comments 
             WHERE post_id = %s and wbs like %s
@@ -112,21 +139,29 @@ class ReplyToComment(View):
             ORDER BY wbs desc
             limit 1
             """, [post.id, parent_wbs + ".%", len(parent_wbs) + 5])
+    else:
+        comments = Comment.objects.raw("""
+            SELECT id, max(wbs) as wbs from comments 
+            WHERE post_id = %s
+            and length(wbs) = %s
+            ORDER BY wbs desc
+            limit 1
+            """, [post.id, 4])
 
-        comment = None
-        for c in comments:
-            comment = c
+    comment = None
+    for c in comments:
+        comment = c
 
-        if not comment:
-            return "%s.%s" % (parent_wbs, "0000")
-        elif not comment.wbs:
-            return "%s.%s" % (parent_wbs, "0000")
-        else:
-            wbs_code = comment.wbs
-            first_wbs = wbs_code[:-4]
-            last_wbs = wbs_code.split(".")[-1]
-            next_wbs = int(last_wbs) + 1
-            return first_wbs + '{0:04d}'.format(next_wbs)
+    if not comment:
+        return "%s.%s" % (parent_wbs, "0000")
+    elif not comment.wbs:
+        return "%s.%s" % (parent_wbs, "0000")
+    else:
+        wbs_code = comment.wbs
+        first_wbs = wbs_code[:-4]
+        last_wbs = wbs_code.split(".")[-1]
+        next_wbs = int(last_wbs) + 1
+        return first_wbs + '{0:04d}'.format(next_wbs)
 
 class StartDiscussionForm(forms.ModelForm):
     class Meta:
@@ -167,15 +202,6 @@ class StartDiscussionView(View):
             return HttpResponseRedirect(new_post_url)
         else:
             return render(request, "submit.html", context={"form": form})
-    
-def discussion(request, post_id):
-    post = Post.objects.select_related("author").get(pk=post_id)
-    comments = Comment.objects.filter(post=post)\
-                    .select_related("author")\
-                    .annotate(indent = (Length('wbs') + 1)/5 )\
-                    .order_by("wbs")
-    context = {"post": post, "comments": comments}
-    return render(request, "discussion.html", context=context)
 
 @login_required
 @require_http_methods(['POST'])
@@ -227,7 +253,6 @@ def _already_voted(user, post, type_of_vote):
                 object_id=post.id,\
                 voter=user, type_of_vote=type_of_vote)\
             .exists()
-
 
 @login_required
 def myprofile(request):
