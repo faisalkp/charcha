@@ -1,6 +1,6 @@
 from django.test import TestCase
-from django.contrib.auth.models import AnonymousUser, User
-from .models import Post, Vote, Comment
+from django.contrib.auth.models import AnonymousUser
+from .models import Post, Vote, Comment, User
 
 class DiscussionTests(TestCase):
     def setUp(self):

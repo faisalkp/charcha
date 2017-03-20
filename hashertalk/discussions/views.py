@@ -13,7 +13,7 @@ from django.forms.models import model_to_dict
 from django.urls import reverse
 
 from .models import UPVOTE, DOWNVOTE, FLAG
-from .models import Post, Comment, Vote
+from .models import Post, Comment, Vote, User
 
 def homepage(request):
     user = None
@@ -172,9 +172,14 @@ def undo_vote_on_comment(request, comment_id):
 def myprofile(request):
     return render(request, "profile.html", context={})
 
+class MyUserCreationForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = UserCreationForm.Meta.fields
+
 class CreateProfileView(View):
     def post(self, request):
-        form = UserCreationForm(request.POST)
+        form = MyUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
@@ -183,7 +188,7 @@ class CreateProfileView(View):
             return render(request, "registration/create-account.html", {"form": form})
 
     def get(self, request):
-        form = UserCreationForm()
+        form = MyUserCreationForm()
         return render(request, "registration/create-account.html", {"form": form})
 
 def profile(request, userid):

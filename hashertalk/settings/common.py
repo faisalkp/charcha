@@ -154,6 +154,8 @@ EMAIL_PORT = email_config['EMAIL_PORT']
 EMAIL_USE_TLS = email_config['EMAIL_USE_TLS']
 EMAIL_USE_SSL = email_config['EMAIL_USE_SSL']
 
+AUTH_USER_MODEL = 'discussions.User'
+
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
 

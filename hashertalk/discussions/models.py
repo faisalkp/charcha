@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -11,6 +11,13 @@ from collections import defaultdict
 UPVOTE = 1
 DOWNVOTE = 2
 FLAG = 3
+
+class User(AbstractUser):
+    """Our custom user model with a score"""
+    class Meta:
+        db_table = "users"
+    
+    score = models.IntegerField(default=0)
 
 class Vote(models.Model):
     class Meta:
@@ -76,7 +83,7 @@ class Votable(models.Model):
 
         self.upvotes = F('upvotes') - upvotes
         self.downvotes = F('downvotes') - downvotes
-        self.save()
+        self.save(update_fields=["upvotes", "downvotes"])
     
     def _vote(self, user, type_of_vote):
         content_type = ContentType.objects.get_for_model(self)
@@ -97,7 +104,7 @@ class Votable(models.Model):
             self.downvotes = F('downvotes') + 1
         else:
             raise Exception("Invalid type of vote " + type_of_vote)
-        self.save()
+        self.save(update_fields=["upvotes", "downvotes", "flags"])
 
     def _already_voted(self, user, content_type, type_of_vote):
         return Vote.objects.filter(content_type=content_type.id,
@@ -170,7 +177,7 @@ class Post(Votable):
         comment.save()
 
         self.num_comments = F('num_comments') + 1
-        self.save()
+        self.save(update_fields=["num_comments"])
 
         return comment
 
@@ -190,7 +197,7 @@ class CommentsManager(models.Manager):
                 c.upvotes - c.downvotes as score,
                 up.is_upvoted, down.is_downvoted
                 FROM comments c 
-                INNER JOIN auth_user u on c.author_id = u.id
+                INNER JOIN users u on c.author_id = u.id
                 LEFT OUTER JOIN (
                     SELECT 1 as is_upvoted, v1.object_id as comment_id
                     FROM votes v1
