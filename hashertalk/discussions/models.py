@@ -116,6 +116,15 @@ class Post(Votable):
     submission_time = models.DateTimeField(auto_now_add=True)
     num_comments = models.IntegerField(default=0)
 
+    def add_comment(self, text, author):
+        comment = Comment()
+        comment.text = text
+        comment.post = self
+        comment.wbs = _find_next_wbs(self)
+        comment.author = author
+        comment.save()
+        return comment
+
     def __str__(self):
         return self.title
 
@@ -173,7 +182,6 @@ class CommentsManager(models.Manager):
 
             return comments
 
-
 class Comment(Votable):
     class Meta:
         db_table = "comments"
@@ -197,8 +205,45 @@ class Comment(Votable):
     # 2. We allow threaded comments upto 6 levels
     wbs = models.CharField(max_length=30)
 
+    def reply(self, text, author):
+        comment = Comment()
+        comment.text = text
+        comment.post = self.post
+        comment.parent_comment = self
+        comment.wbs = _find_next_wbs(self.post, parent_wbs=self.wbs)
+        comment.author = author
+        comment.save()
+        return comment
+
     def __str__(self):
         return self.text
+
+def _find_next_wbs(post, parent_wbs=None):
+    if not parent_wbs:
+        parent_wbs = ""
+    
+    comments = Comment.objects.raw("""
+        SELECT id, max(wbs) as wbs from comments 
+        WHERE post_id = %s and wbs like %s
+        and length(wbs) = %s
+        ORDER BY wbs desc
+        limit 1
+        """, [post.id, parent_wbs + ".%", len(parent_wbs) + 5])
+
+    comment = None
+    for c in comments:
+        comment = c
+
+    if not comment:
+        return "%s.%s" % (parent_wbs, "0000")
+    elif not comment.wbs:
+        return "%s.%s" % (parent_wbs, "0000")
+    else:
+        wbs_code = comment.wbs
+        first_wbs = wbs_code[:-4]
+        last_wbs = wbs_code.split(".")[-1]
+        next_wbs = int(last_wbs) + 1
+        return first_wbs + '{0:04d}'.format(next_wbs)
 
 class Favourite(models.Model):
     class Meta:

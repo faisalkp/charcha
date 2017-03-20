@@ -86,8 +86,7 @@ class DiscussionView(View):
         post = Post.objects.select_related("author").get(pk=post_id)
         form = CommentForm(request.POST)
         if form.is_valid():
-            comment = form.save(commit=False)
-            comment = _add_comment(comment, post, None, request.user)
+            comment = post.add_comment(form.cleaned_data['text'], request.user)
             post_url = reverse('discussion', args=[post.id])
             return HttpResponseRedirect(post_url)
         else:
@@ -104,56 +103,16 @@ class ReplyToComment(View):
 
     def post(self, request, **kwargs):
         parent_comment = get_object_or_404(Comment, pk=kwargs['id'])
-        post = parent_comment.post
         form = CommentForm(request.POST)
-        context = {"post": post, "parent_comment": parent_comment, "form": form}
-        
+
         if not form.is_valid():
+            post = parent_comment.post
+            context = {"post": post, "parent_comment": parent_comment, "form": form}
             return render(request, "reply-to-comment.html", context=context)
 
-        comment = form.save(commit=False)
-        comment = _add_comment(comment, post, parent_comment, request.user)
-
-        post_url = reverse('discussion', args=[post.id])
+        comment = parent_comment.reply(form.cleaned_data['text'], request.user)
+        post_url = reverse('discussion', args=[parent_comment.post.id])
         return HttpResponseRedirect(post_url)
-
-def _add_comment(comment, post, parent_comment, author):
-    comment.post = post
-    if parent_comment:
-        comment.parent_comment = parent_comment
-        comment.wbs = _find_next_wbs(post, parent_wbs=parent_comment.wbs)
-    else:
-        comment.wbs = _find_next_wbs(post)
-    comment.author = author
-    comment.save()
-    return comment
-
-def _find_next_wbs(post, parent_wbs=None):
-    if not parent_wbs:
-        parent_wbs = ""
-    
-    comments = Comment.objects.raw("""
-        SELECT id, max(wbs) as wbs from comments 
-        WHERE post_id = %s and wbs like %s
-        and length(wbs) = %s
-        ORDER BY wbs desc
-        limit 1
-        """, [post.id, parent_wbs + ".%", len(parent_wbs) + 5])
-
-    comment = None
-    for c in comments:
-        comment = c
-
-    if not comment:
-        return "%s.%s" % (parent_wbs, "0000")
-    elif not comment.wbs:
-        return "%s.%s" % (parent_wbs, "0000")
-    else:
-        wbs_code = comment.wbs
-        first_wbs = wbs_code[:-4]
-        last_wbs = wbs_code.split(".")[-1]
-        next_wbs = int(last_wbs) + 1
-        return first_wbs + '{0:04d}'.format(next_wbs)
 
 class StartDiscussionForm(forms.ModelForm):
     class Meta:
