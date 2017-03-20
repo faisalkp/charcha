@@ -6,6 +6,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import F
 
+from collections import defaultdict
+
 UPVOTE = 1
 DOWNVOTE = 2
 FLAG = 3
@@ -103,12 +105,55 @@ class Votable(models.Model):
                     voter=user, type_of_vote=type_of_vote)\
                 .exists()
 
+class PostsManager(models.Manager):
+    def recent_posts_with_my_votes(self, user):
+        posts = Post.objects\
+            .annotate(score=F('upvotes') - F('downvotes'))\
+            .select_related("author")\
+            .order_by("-submission_time")[:50]
+        if user:
+            posts = self._append_votes_by_user(posts, user)
+        return posts
+
+    def _append_votes_by_user(self, posts, user):
+        # Returns a dictionary
+        # key = postid
+        # value = set of votes cast by this user
+        # for example set('downvote', 'flag')
+        post_ids = [p.id for p in posts]
+        post_type = ContentType.objects.get_for_model(Post)
+        objects = Vote.objects.\
+                    only('object_id', 'type_of_vote').\
+                    filter(content_type=post_type.id,
+                        object_id__in=post_ids,
+                        voter=user)
+
+        votes_by_post = defaultdict(set)
+        for obj in objects:
+            vote_type_str = _vote_type_to_string(obj.type_of_vote)
+            votes_by_post[obj.object_id].add(vote_type_str)
+
+        for post in posts:
+            post.my_votes = self.votes_by_post[post.id]
+            
+        return posts
+
+    def _vote_type_to_string(self, vote_type):
+        mapping = {
+            UPVOTE: "upvote",
+            DOWNVOTE: "downvote",
+            FLAG: "flag"
+        }
+        return mapping[vote_type]
+
+
 class Post(Votable):
     class Meta:
         db_table = "posts"
         index_together = [
             ["submission_time",],
         ]
+    objects = PostsManager()
     title = models.CharField(max_length=120)
     url = models.URLField(blank=True)
     text = models.TextField(blank=True, max_length=8192)
@@ -129,7 +174,6 @@ class Post(Votable):
         return self.title
 
 class CommentsManager(models.Manager):
-
     def best_ones_first(self, post_id, user_id):
         comment_type = ContentType.objects.get_for_model(Comment)
         

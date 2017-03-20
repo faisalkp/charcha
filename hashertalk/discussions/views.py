@@ -3,63 +3,21 @@ from django.views import View
 from django.views.decorators.http import require_http_methods
 from django import forms
 from django.shortcuts import render, get_object_or_404
-from django.db.models.functions import Length
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.contenttypes.models import ContentType
 
-from django.db.models import F
 from django.forms.models import model_to_dict
 from django.urls import reverse
 
-from .models import UPVOTE, DOWNVOTE, FLAG
 from .models import Post, Comment, Vote
 
-from collections import defaultdict
-
 def homepage(request):
-    posts = Post.objects\
-                .annotate(score=F('upvotes') - F('downvotes'))\
-                .select_related("author")\
-                .order_by("-submission_time")[:50]
-    
+    user = None
     if request.user.is_authenticated():
-        posts = _append_votes_by_user(posts, request.user)
-
+        user = request.user
+    posts = Post.objects.recent_posts_with_my_votes(user)
     return render(request, "home.html", context={"posts": posts})
-
-def _append_votes_by_user(posts, user):
-    # Returns a dictionary
-    # key = postid
-    # value = set of votes cast by this user
-    # for example set('downvote', 'flag')
-    post_ids = [p.id for p in posts]
-    post_type = ContentType.objects.get_for_model(Post)
-    objects = Vote.objects.\
-                only('object_id', 'type_of_vote').\
-                filter(content_type=post_type.id,
-                    object_id__in=post_ids,
-                    voter=user)
-
-    votes_by_post = defaultdict(set)
-    for obj in objects:
-        vote_type_str = _vote_type_to_string(obj.type_of_vote)
-        votes_by_post[obj.object_id].add(vote_type_str)
-
-    for post in posts:
-        post.my_votes = votes_by_post[post.id]
-        
-    return posts
-
-def _vote_type_to_string(vote_type):
-    mapping = {
-        UPVOTE: "upvote",
-        DOWNVOTE: "downvote",
-        FLAG: "flag"
-    }
-    return mapping[vote_type]
 
 class CommentForm(forms.ModelForm):
     class Meta:
@@ -72,10 +30,6 @@ class CommentForm(forms.ModelForm):
 class DiscussionView(View):
     def get(self, request, post_id):
         post = Post.objects.select_related("author").get(pk=post_id)
-        # comments = Comment.objects.filter(post=post)\
-        #                 .select_related("author")\
-        #                 .annotate(indent = (Length('wbs')/5 ))\
-        #                 .order_by("wbs")
         comments = Comment.objects.best_ones_first(post_id, request.user.id)
 
         form = CommentForm()
