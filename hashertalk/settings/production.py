@@ -1,7 +1,7 @@
 from .common import *
 
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['hashedin-charcha.herokuapp.com', 'charcha.hashedin.com']
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
