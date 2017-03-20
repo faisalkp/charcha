@@ -76,8 +76,9 @@ class DiscussionView(View):
         post = Post.objects.select_related("author").get(pk=post_id)
         comments = Comment.objects.filter(post=post)\
                         .select_related("author")\
-                        .annotate(indent = (Length('wbs') + 1)/5 )\
+                        .annotate(indent = (Length('wbs')/5 ))\
                         .order_by("wbs")
+
         form = CommentForm()
         context = {"post": post, "comments": comments, "form": form}
         return render(request, "discussion.html", context=context)
@@ -129,22 +130,16 @@ def _add_comment(comment, post, parent_comment, author):
     return comment
 
 def _find_next_wbs(post, parent_wbs=None):
-    if parent_wbs:
-        comments = Comment.objects.raw("""
-            SELECT id, max(wbs) as wbs from comments 
-            WHERE post_id = %s and wbs like %s
-            and length(wbs) = %s
-            ORDER BY wbs desc
-            limit 1
-            """, [post.id, parent_wbs + ".%", len(parent_wbs) + 5])
-    else:
-        comments = Comment.objects.raw("""
-            SELECT id, max(wbs) as wbs from comments 
-            WHERE post_id = %s
-            and length(wbs) = %s
-            ORDER BY wbs desc
-            limit 1
-            """, [post.id, 4])
+    if not parent_wbs:
+        parent_wbs = ""
+    
+    comments = Comment.objects.raw("""
+        SELECT id, max(wbs) as wbs from comments 
+        WHERE post_id = %s and wbs like %s
+        and length(wbs) = %s
+        ORDER BY wbs desc
+        limit 1
+        """, [post.id, parent_wbs + ".%", len(parent_wbs) + 5])
 
     comment = None
     for c in comments:

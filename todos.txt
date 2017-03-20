@@ -1,0 +1,7 @@
+TODOs
+=====
+
+1. Show upvoted/downvoted comments on discussion page
+1. Sort comments based on upvotes/downvotes
+1. Refactor vote-control into an include file
+1. Don't allow to unvote after a minute of upvote/downvote

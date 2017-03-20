@@ -118,6 +118,21 @@ class Post(Votable):
     def __str__(self):
         return self.title
 
+# class CommentsManager(models.Manager):
+
+#     def best_ones_first(self, post_id, user_id):
+#         comment_type = ContentType.objects.get_for_model(Comment)
+        
+#         from django.db import connection
+#         with connection.cursor() as cursor:
+#             cursor.execute("""
+#                 SELECT c.id, c.text, u.username, c.submission_time,
+#                 c.wbs, 
+#             """)
+#         pass
+
+#     pass
+
 class Comment(Votable):
     class Meta:
         db_table = "comments"
@@ -134,11 +149,11 @@ class Comment(Votable):
     submission_time = models.DateTimeField(auto_now_add=True)
     
     # wbs helps us to track the comments as a tree
-    # Format is 0000.0000.0000.0000.0000.0000
+    # Format is .0000.0000.0000.0000.0000.0000
     # This means that:
     # 1. We only allow 9999 comments at each level
     # 2. We allow threaded comments upto 6 levels
-    wbs = models.CharField(max_length=29)
+    wbs = models.CharField(max_length=30)
 
     def __str__(self):
         return self.text

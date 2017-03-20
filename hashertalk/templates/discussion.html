@@ -56,7 +56,9 @@
               {{ comment.text | markdown}}
           </p>
         </div>
+        {% if comment.indent < 6 %}
         <a class="reply" href="{% url 'reply_to_comment' comment.id %}">reply</a>
+        {% endif %}
       </div>
     </div>
   {% endfor %}
