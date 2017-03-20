@@ -38,9 +38,9 @@ class Votable(models.Model):
     votes = GenericRelation(Vote)
 
     # denormalization to save database queries
-    # score = count(upvotes) - count(downvotes)
     # flags = count of votes of type "Flag"
-    score = models.IntegerField(default=0)
+    upvotes = models.IntegerField(default=0)
+    downvotes = models.IntegerField(default=0)
     flags = models.IntegerField(default=0)
     
     def upvote(self, user):
@@ -72,7 +72,8 @@ class Votable(models.Model):
                 raise Exception("Invalid state, logic bug in undo_vote")
             v.delete()
 
-        self.score = F('score') - upvotes + downvotes
+        self.upvotes = F('upvotes') - upvotes
+        self.downvotes = F('downvotes') - downvotes
         self.save()
     
     def _vote(self, user, type_of_vote):
@@ -85,13 +86,13 @@ class Votable(models.Model):
             type_of_vote=type_of_vote)
         vote.save()
 
-        # Next, update our denormalized columns - flags and score
+        # Next, update our denormalized columns
         if type_of_vote == FLAG:
             self.flags = F('flags') + 1
         elif type_of_vote == UPVOTE:
-            self.score = F('score') + 1
+            self.upvotes = F('upvotes') + 1
         elif type_of_vote == DOWNVOTE:
-            self.score = F('score') - 1
+            self.downvotes = F('downvotes') + 1
         else:
             raise Exception("Invalid type of vote " + type_of_vote)
         self.save()
@@ -118,20 +119,60 @@ class Post(Votable):
     def __str__(self):
         return self.title
 
-# class CommentsManager(models.Manager):
+class CommentsManager(models.Manager):
 
-#     def best_ones_first(self, post_id, user_id):
-#         comment_type = ContentType.objects.get_for_model(Comment)
+    def best_ones_first(self, post_id, user_id):
+        comment_type = ContentType.objects.get_for_model(Comment)
         
-#         from django.db import connection
-#         with connection.cursor() as cursor:
-#             cursor.execute("""
-#                 SELECT c.id, c.text, u.username, c.submission_time,
-#                 c.wbs, 
-#             """)
-#         pass
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT c.id, c.text, u.id, u.username, c.submission_time,
+                c.wbs, length(c.wbs)/5 as indent, 
+                c.upvotes, c.downvotes, c.flags,
+                c.upvotes - c.downvotes as score,
+                up.is_upvoted, down.is_downvoted
+                FROM comments c 
+                INNER JOIN auth_user u on c.author_id = u.id
+                LEFT OUTER JOIN (
+                    SELECT 1 as is_upvoted, v1.object_id as comment_id
+                    FROM votes v1
+                    WHERE v1.content_type_id = %s
+                    AND type_of_vote = 1
+                    AND v1.voter_id = %s
+                ) up on c.id = up.comment_id
+                LEFT OUTER JOIN (
+                    SELECT 1 as is_downvoted, v2.object_id as comment_id
+                    FROM votes v2
+                    WHERE v2.content_type_id = %s
+                    AND type_of_vote = 2
+                    AND v2.voter_id = %s
+                ) down on c.id = down.comment_id
+                WHERE c.post_id = %s
+                ORDER BY c.wbs
+            """, [comment_type.id, user_id, 
+                    comment_type.id, user_id, 
+                    post_id])
+            
+            comments = []
+            for row in cursor.fetchall():
+                comment = self.model(
+                        id = row[0], text = row[1], 
+                        submission_time = row[4],
+                        wbs = row[5],
+                        upvotes = row[7], downvotes=row[8],
+                        flags = row[9]
+                    )
+                author = User(id=row[2], username=row[3])
+                comment.author = author
+                comment.indent = row[6]
+                comment.score = row[10]
+                comment.is_upvoted = True if row[11] else False
+                comment.is_downvoted = True if row[12] else False
+                comments.append(comment)
 
-#     pass
+            return comments
+
 
 class Comment(Votable):
     class Meta:
@@ -139,6 +180,7 @@ class Comment(Votable):
         unique_together = [
             ["post", "wbs"],
         ]
+    objects = CommentsManager()
 
     post = models.ForeignKey(Post, related_name="comments")
     parent_comment = models.ForeignKey('self', 

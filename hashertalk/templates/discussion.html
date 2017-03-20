@@ -40,14 +40,27 @@
   {% for comment in comments %}
     <div class="comment indent-{{comment.indent}}">
       <div data-object-type="comments" data-object-id="{{comment.id}}" class="vote-control">
-        <div data-state="enabled" class="vote-button upvote"></div>
-        <div data-state="enabled" class="vote-button downvote"></div>
+        {% if comment.is_upvoted and comment.is_downvoted %}
+        <button class="vote-button upvote" data-state="voted"></button>
+        <button class="vote-button downvote" data-state="voted"></button>
+        {% elif comment.is_upvoted %}
+        <button class="vote-button upvote" data-state="voted"></button>
+        <button class="vote-button downvote" data-state="disabled"></button>
+        {% elif comment.is_downvoted %}
+        <button class="vote-button upvote" data-state="disabled"></button>
+        <button class="vote-button downvote" data-state="voted"></button>
+        {% else %}
+        <button class="vote-button upvote" data-state="enabled"></button>
+        <button class="vote-button downvote" data-state="enabled"></button>
+        {% endif %}
       </div>
       <div>
         <div class="comment-header">
           <span class="comment-author">
             by {{ comment.author.username }}
           </span>
+          <span>|</span>
+          <span>{{comment.score}} points</span>
           <span>|</span>
           <span class="comment-submission-time">{{ comment.submission_time | naturaltime }}</span>
         </div>
@@ -58,6 +71,8 @@
         </div>
         {% if comment.indent < 6 %}
         <a class="reply" href="{% url 'reply_to_comment' comment.id %}">reply</a>
+        {% else %}
+        <span><i>replies not allowed anymore</i></span>
         {% endif %}
       </div>
     </div>

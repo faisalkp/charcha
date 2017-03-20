@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.contenttypes.models import ContentType
 
+from django.db.models import F
 from django.forms.models import model_to_dict
 from django.urls import reverse
 
@@ -20,6 +21,7 @@ from collections import defaultdict
 
 def homepage(request):
     posts = Post.objects\
+                .annotate(score=F('upvotes') - F('downvotes'))\
                 .select_related("author")\
                 .order_by("-submission_time")[:50]
     
@@ -46,14 +48,10 @@ def _append_votes_by_user(posts, user):
         vote_type_str = _vote_type_to_string(obj.type_of_vote)
         votes_by_post[obj.object_id].add(vote_type_str)
 
-    posts_as_list = []
-    for p in posts:
-        post = model_to_dict(p)
-        post['submission_time'] = p.submission_time
-        post['author'] = p.author.username
-        post['votes'] = votes_by_post[p.id]
-        posts_as_list.append(post)
-    return posts_as_list
+    for post in posts:
+        post.votes = votes_by_post[post.id]
+        
+    return posts
 
 def _vote_type_to_string(vote_type):
     mapping = {
@@ -74,10 +72,11 @@ class CommentForm(forms.ModelForm):
 class DiscussionView(View):
     def get(self, request, post_id):
         post = Post.objects.select_related("author").get(pk=post_id)
-        comments = Comment.objects.filter(post=post)\
-                        .select_related("author")\
-                        .annotate(indent = (Length('wbs')/5 ))\
-                        .order_by("wbs")
+        # comments = Comment.objects.filter(post=post)\
+        #                 .select_related("author")\
+        #                 .annotate(indent = (Length('wbs')/5 ))\
+        #                 .order_by("wbs")
+        comments = Comment.objects.best_ones_first(post_id, request.user.id)
 
         form = CommentForm()
         context = {"post": post, "comments": comments, "form": form}
