@@ -68,7 +68,8 @@ class DiscussionTests(TestCase):
         _c4 = "Seriously, that's all you have to say?"
 
         post = self.new_discussion(self.ramesh, "Ramesh's Biography")
-        
+        self.assertEquals(post.num_comments, 0)
+
         rameshs_comment = post.add_comment(_c1, self.ramesh)
         amits_comment = rameshs_comment.reply(_c2, self.amit)
         swethas_comment = rameshs_comment.reply(_c3, self.swetha)
@@ -79,4 +80,6 @@ class DiscussionTests(TestCase):
 
         self.assertEquals(comments, [_c1, _c2, _c4, _c3])
 
-    
+        # check if num_comments in post object is updated
+        post = Post.objects.get(pk=post.id)
+        self.assertEquals(post.num_comments, 4)

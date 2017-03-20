@@ -9,8 +9,19 @@
 <div class="container-fluid">
   <div class="post">
       <div data-object-type="posts" data-object-id="{{post.id}}" class="vote-control">
-        <div data-state="enabled" class="vote-button upvote"></div>
-        <div data-state="enabled" class="vote-button downvote"></div>
+        {% if post.is_upvoted and post.is_downvoted %}
+        <button class="vote-button upvote" data-state="voted"></button>
+        <button class="vote-button downvote" data-state="voted"></button>
+        {% elif post.is_upvoted %}
+        <button class="vote-button upvote" data-state="voted"></button>
+        <button class="vote-button downvote" data-state="disabled"></button>
+        {% elif post.is_downvoted %}
+        <button class="vote-button upvote" data-state="disabled"></button>
+        <button class="vote-button downvote" data-state="voted"></button>
+        {% else %}
+        <button class="vote-button upvote" data-state="enabled"></button>
+        <button class="vote-button downvote" data-state="enabled"></button>
+        {% endif %}
       </div>
       <div>
           <div class="post-title">
@@ -19,7 +30,7 @@
           <div class="post-line-2">
             <div class="post-score">
                by {{ post.author.username }} | 
-              {{ post.score }} points | 
+              {{ post.score }} point{{ post.score | pluralize }} | 
               {{ comments|length }} comment{{ comments | length | pluralize }} |
               {{ post.submission_time | naturaltime }}
             </div>

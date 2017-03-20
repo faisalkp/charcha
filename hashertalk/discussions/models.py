@@ -130,7 +130,7 @@ class PostsManager(models.Manager):
 
         votes_by_post = defaultdict(set)
         for obj in objects:
-            vote_type_str = self._vote_type_to_string(obj.type_of_vote)
+            vote_type_str = self.vote_type_to_string(obj.type_of_vote)
             votes_by_post[obj.object_id].add(vote_type_str)
 
         for post in posts:
@@ -138,7 +138,7 @@ class PostsManager(models.Manager):
             
         return posts
 
-    def _vote_type_to_string(self, vote_type):
+    def vote_type_to_string(self, vote_type):
         mapping = {
             UPVOTE: "upvote",
             DOWNVOTE: "downvote",
@@ -168,6 +168,10 @@ class Post(Votable):
         comment.wbs = _find_next_wbs(self)
         comment.author = author
         comment.save()
+
+        self.num_comments = F('num_comments') + 1
+        self.save()
+
         return comment
 
     def __str__(self):
@@ -257,6 +261,9 @@ class Comment(Votable):
         comment.wbs = _find_next_wbs(self.post, parent_wbs=self.wbs)
         comment.author = author
         comment.save()
+
+        comment.post.num_comments = F('num_comments') + 1
+        comment.post.save()
         return comment
 
     def __str__(self):

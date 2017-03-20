@@ -6,10 +6,13 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.contenttypes.models import ContentType
 
+from django.db.models import F
 from django.forms.models import model_to_dict
 from django.urls import reverse
 
+from .models import UPVOTE, DOWNVOTE, FLAG
 from .models import Post, Comment, Vote
 
 def homepage(request):
@@ -29,7 +32,22 @@ class CommentForm(forms.ModelForm):
 
 class DiscussionView(View):
     def get(self, request, post_id):
-        post = Post.objects.select_related("author").get(pk=post_id)
+        # TODO: Move this entire logic to models.py
+        post = Post.objects\
+            .annotate(score=F('upvotes') - F('downvotes'))\
+            .select_related("author").get(pk=post_id)
+
+        content_type = ContentType.objects.get_for_model(Post)
+        post_votes = Vote.objects.filter(content_type=content_type.id,
+            object_id=post_id, type_of_vote__in=(UPVOTE, DOWNVOTE),
+            voter=request.user)
+        
+        for v in post_votes:
+            if v.type_of_vote == UPVOTE:
+                post.is_upvoted = True
+            elif v.type_of_vote == DOWNVOTE:
+                post.is_downvoted = True
+
         comments = Comment.objects.best_ones_first(post_id, request.user.id)
 
         form = CommentForm()

@@ -5,5 +5,16 @@
 {% endblock %}
 
 {% block content %}
-<h1>{{ user.username }}</h1>
+<div class="container-fluid">
+<h1>{{ user.username }}'s profile</h1>
+<p>
+    To add :
+    <ol>
+        <li>Discussions started by me</li>
+        <li>All my comments</li>
+        <li>Upvoted / Downvoted Discussions</li>
+        <li>Upvoted / Downvoted Comments</li>
+    </ol>
+</p>
+</div>
 {% endblock %}
