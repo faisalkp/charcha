@@ -106,7 +106,7 @@ class Votable(models.Model):
                 .exists()
 
 class PostsManager(models.Manager):
-    def recent_posts_with_my_votes(self, user):
+    def recent_posts_with_my_votes(self, user=None):
         posts = Post.objects\
             .annotate(score=F('upvotes') - F('downvotes'))\
             .select_related("author")\
@@ -130,11 +130,11 @@ class PostsManager(models.Manager):
 
         votes_by_post = defaultdict(set)
         for obj in objects:
-            vote_type_str = _vote_type_to_string(obj.type_of_vote)
+            vote_type_str = self._vote_type_to_string(obj.type_of_vote)
             votes_by_post[obj.object_id].add(vote_type_str)
 
         for post in posts:
-            post.my_votes = self.votes_by_post[post.id]
+            post.my_votes = votes_by_post[post.id]
             
         return posts
 
