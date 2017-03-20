@@ -49,7 +49,7 @@ def _append_votes_by_user(posts, user):
         votes_by_post[obj.object_id].add(vote_type_str)
 
     for post in posts:
-        post.votes = votes_by_post[post.id]
+        post.my_votes = votes_by_post[post.id]
         
     return posts
 

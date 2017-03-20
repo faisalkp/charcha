@@ -12,13 +12,13 @@
   {% for post in posts %}
     <div class="post">
     <div data-object-type="posts" data-object-id="{{post.id}}" class="vote-control">
-      {% if 'upvote' in post.votes and 'downvote' in post.votes %}
+      {% if 'upvote' in post.my_votes and 'downvote' in post.my_votes %}
       <button class="vote-button upvote" data-state="voted"></button>
       <button class="vote-button downvote" data-state="voted"></button>
-      {% elif 'upvote' in post.votes %}
+      {% elif 'upvote' in post.my_votes %}
       <button class="vote-button upvote" data-state="voted"></button>
       <button class="vote-button downvote" data-state="disabled"></button>
-      {% elif 'downvote' in post.votes %}
+      {% elif 'downvote' in post.my_votes %}
       <button class="vote-button upvote" data-state="disabled"></button>
       <button class="vote-button downvote" data-state="voted"></button>
       {% else %}
