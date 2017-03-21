@@ -6,6 +6,7 @@
 {% block title %}{{ post.title }} | Charcha{% endblock %}
 
 {% block content %}
+{% spaceless %}
 <div class="container-fluid">
   <div class="post">
       {% include "partials/post-vote-control.html" with obj_type='posts' obj=post %}
@@ -46,14 +47,14 @@
           <span class="comment-author">
             by {{ comment.author.username }}
           </span>
-          <span>|</span>
+          <span> | </span>
           <span>{{comment.score}} points</span>
-          <span>|</span>
+          <span> | </span>
           <span class="comment-submission-time">{{ comment.submission_time | naturaltime }}</span>
-          <span>|</span>
+          <span> | </span>
           <span><a href="#comment-{{comment.id}}">permalink</a>
           {% if request.user.is_staff %}
-            <span>|</span>
+            <span> | </span>
             <span>
               <a href="{% url 'admin:discussions_comment_change' comment.id %}">admin</a>
             </span>
@@ -74,4 +75,5 @@
   {% endfor %}
  </div>
 </div>
+{% endspaceless %}
 {% endblock %}

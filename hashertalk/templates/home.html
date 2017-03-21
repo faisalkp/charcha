@@ -3,6 +3,7 @@
 {% block title %}Charcha{% endblock %}
 
 {% block content %}
+{% spaceless %}
 <div class="container-fluid">
 <form id="defaults">
   <input name="csrfmiddlewaretoken" type="hidden" value="{{ csrf_token }}">
@@ -34,4 +35,5 @@
     {% endfor %}
 </div>
 </div>
+{% endspaceless %}
 {% endblock %}
