@@ -35,31 +35,17 @@ class CommentForm(forms.ModelForm):
 @method_decorator(login_required, name='post')
 class DiscussionView(View):
     def get(self, request, post_id):
-        # TODO: Move this entire logic to models.py
-        post = Post.objects\
-            .annotate(score=F('upvotes') - F('downvotes'))\
-            .select_related("author").get(pk=post_id)
-
-        if request.user.is_authenticated():
-            content_type = ContentType.objects.get_for_model(Post)
-            post_votes = Vote.objects.filter(content_type=content_type.id,
-                object_id=post_id, type_of_vote__in=(UPVOTE, DOWNVOTE),
-                voter=request.user)
-            
-            for v in post_votes:
-                if v.type_of_vote == UPVOTE:
-                    post.is_upvoted = True
-                elif v.type_of_vote == DOWNVOTE:
-                    post.is_downvoted = True
-
-        comments = Comment.objects.best_ones_first(post_id, request.user.id)
-
+        post = Post.objects.get_post_with_my_votes(post_id, 
+                    request.user)
+        comments = Comment.objects.best_ones_first(post_id, 
+                        request.user.id)
         form = CommentForm()
         context = {"post": post, "comments": comments, "form": form}
         return render(request, "discussion.html", context=context)
 
     def post(self, request, post_id):
-        post = Post.objects.select_related("author").get(pk=post_id)
+        post = Post.objects.get_post_with_my_votes(post_id, 
+                    request.user)
         form = CommentForm(request.POST)
         if form.is_valid():
             comment = post.add_comment(form.cleaned_data['text'], request.user)
