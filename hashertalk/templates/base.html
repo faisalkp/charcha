@@ -48,7 +48,7 @@
     <div class="collapse navbar-collapse" id="primary-nav">
       
       <ul class="nav navbar-nav navbar-right">
-        {% if user.is_authenticated %}
+        {% if request.user.is_authenticated %}
         <li><a href="{% url "start-discussion" %}">new discussion</a></li>
         <li><a href="{% url 'myprofile' %}">{{request.user.username}} | {{request.user.score}} points</a></li>
         <li><a href="{% url "logout" %}">logout</a></li>

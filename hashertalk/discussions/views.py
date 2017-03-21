@@ -4,6 +4,7 @@ from django.views.decorators.http import require_http_methods
 from django import forms
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import login
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.contenttypes.models import ContentType
@@ -11,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import F
 from django.forms.models import model_to_dict
 from django.urls import reverse
+from django.utils.decorators import method_decorator
 
 from .models import UPVOTE, DOWNVOTE, FLAG
 from .models import Post, Comment, Vote, User
@@ -30,6 +32,7 @@ class CommentForm(forms.ModelForm):
             'text': 'Your Comment',
         }
 
+@method_decorator(login_required, name='post')
 class DiscussionView(View):
     def get(self, request, post_id):
         # TODO: Move this entire logic to models.py
@@ -66,7 +69,7 @@ class DiscussionView(View):
             context = {"post": post, "form": form, "comments": []}
             return render(request, "discussion.html", context=context)
 
-class ReplyToComment(View):
+class ReplyToComment(LoginRequiredMixin, View):
     def get(self, request, **kwargs):
         parent_comment = get_object_or_404(Comment, pk=kwargs['id'])
         post = parent_comment.post
@@ -110,7 +113,7 @@ class StartDiscussionForm(forms.ModelForm):
             )
         return cleaned_data
 
-class StartDiscussionView(View):
+class StartDiscussionView(LoginRequiredMixin, View):
     def get(self, request):
         form = StartDiscussionForm(initial={"author": request.user})
         return render(request, "submit.html", context={"form": form})
