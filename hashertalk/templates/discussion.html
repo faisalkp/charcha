@@ -33,6 +33,9 @@
               {{ post.score }} point{{ post.score | pluralize }} | 
               {{ comments|length }} comment{{ comments | length | pluralize }} |
               {{ post.submission_time | naturaltime }}
+              {% if request.user.is_staff %}
+              | <a href="{% url 'admin:discussions_post_change' post.id %}">admin</a>
+              {% endif %}
             </div>
           </div>
           {% if post.text %}
@@ -49,7 +52,7 @@
   </div>
   <div class="comments">
   {% for comment in comments %}
-    <div class="comment indent-{{comment.indent}}">
+    <div id="comment-{{comment.id}}" class="comment indent-{{comment.indent}}">
       <div data-object-type="comments" data-object-id="{{comment.id}}" class="vote-control">
         {% if comment.is_upvoted and comment.is_downvoted %}
         <button class="vote-button upvote" data-state="voted"></button>
@@ -74,6 +77,14 @@
           <span>{{comment.score}} points</span>
           <span>|</span>
           <span class="comment-submission-time">{{ comment.submission_time | naturaltime }}</span>
+          <span>|</span>
+          <span><a href="#comment-{{comment.id}}">permalink</a>
+          {% if request.user.is_staff %}
+            <span>|</span>
+            <span>
+              <a href="{% url 'admin:discussions_comment_change' comment.id %}">admin</a>
+            </span>
+          {% endif %}
         </div>
         <div class="comment-text">
           <p>

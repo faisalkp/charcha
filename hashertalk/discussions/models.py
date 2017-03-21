@@ -168,6 +168,9 @@ class Post(Votable):
     submission_time = models.DateTimeField(auto_now_add=True)
     num_comments = models.IntegerField(default=0)
 
+    def get_absolute_url(self):
+        return "/discuss/%i/" % self.id
+
     def add_comment(self, text, author):
         comment = Comment()
         comment.text = text
