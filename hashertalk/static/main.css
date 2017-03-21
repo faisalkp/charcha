@@ -120,6 +120,7 @@ h1 {
 .comment-header a {
     color: gray;
 }
+.post-text,
 .comment-text {
     background-color: #ffefeb;
     border: 1px solid #ffccbd;
@@ -128,14 +129,19 @@ h1 {
     padding-left: 8px;
     padding-right: 8px;
 }
-.comment-text h1 {
+.comment-text h1,
+.post-text h1 {
     font-size: 20px;
-    font-weight: bold;
 }
-.comment-text h2 {
+.comment-text h2,
+.post-text h2 {
     font-size: 17px;
-    font-weight: bold;
 }
+
+.post-text h3,
+.post-text h4,
+.post-text h5,
+.post-text h6,
 .comment-text h3,
 .comment-text h4,
 .comment-text h5,
