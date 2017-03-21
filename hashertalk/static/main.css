@@ -129,6 +129,9 @@ h1 {
     padding-left: 8px;
     padding-right: 8px;
 }
+.post-text {
+    margin-bottom: 15px;
+}
 .comment-text h1,
 .post-text h1 {
     font-size: 20px;

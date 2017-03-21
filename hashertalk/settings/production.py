@@ -1,6 +1,7 @@
 from .common import *
 
-DEBUG = False
+_debug = os.environ.get("DEBUG", 'False')
+DEBUG = (_debug == "True" or __debug == "true")
 ALLOWED_HOSTS = ['hashedin-charcha.herokuapp.com', 'charcha.hashedin.com']
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
