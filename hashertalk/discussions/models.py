@@ -97,6 +97,8 @@ class Votable(models.Model):
         content_type = ContentType.objects.get_for_model(self)
         if self._already_voted(user, content_type, type_of_vote):
             return
+        elif self._voting_for_myself(user):
+            return
 
         # First, save the vote
         vote = Vote(content_object=self, voter=user, 
@@ -120,6 +122,9 @@ class Votable(models.Model):
         # Increment/Decrement the score of author
         self.author.score = F('score') + score_delta
         self.author.save(update_fields=["score"])
+
+    def _voting_for_myself(self, user):
+        return self.author.id == user.id
 
     def _already_voted(self, user, content_type, type_of_vote):
         return Vote.objects.filter(content_type=content_type.id,
@@ -173,6 +178,8 @@ class PostsManager(models.Manager):
             votes_by_post[obj.object_id].add(obj.type_of_vote)
 
         for post in posts:
+            post.is_upvoted = False
+            post.is_downvoted = False
             if UPVOTE in votes_by_post[post.id]:
                 post.is_upvoted = True
             elif DOWNVOTE in votes_by_post[post.id]:

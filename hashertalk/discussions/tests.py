@@ -21,7 +21,24 @@ class DiscussionTests(TestCase):
             author=user)
         post.save()
         return post
-        
+    
+    def test_I_cant_vote_for_me(self):
+        post = self.new_discussion(self.ramesh, "Ramesh's Biography")
+        self.assertEquals(post.upvotes, 0)
+        post.upvote(self.ramesh)
+        post = Post.objects.get(pk=post.id)
+        self.assertEquals(post.upvotes, 0)
+
+    def test_double_voting(self):
+        post = self.new_discussion(self.ramesh, "Ramesh's Biography")
+        self.assertEquals(post.upvotes, 0)
+        post.upvote(self.amit)
+        post = Post.objects.get(pk=post.id)
+        self.assertEquals(post.upvotes, 1)
+        post.upvote(self.amit)
+        post = Post.objects.get(pk=post.id)
+        self.assertEquals(post.upvotes, 1)
+
     def test_voting_on_home_page(self):
         # Ramesh starts a discussion
         post = self.new_discussion(self.ramesh, "Ramesh's Biography")
@@ -30,36 +47,38 @@ class DiscussionTests(TestCase):
         posts = Post.objects.recent_posts_with_my_votes()
         self.assertEquals(len(posts), 1)
         post = posts.first()
-        self.assertEquals(post.score, 0)
+        self.assertEquals(post.upvotes, 0)
+        self.assertEquals(post.downvotes, 0)
 
-        # Ramesh and Amit upvote the post
-        post.upvote(self.ramesh)
+        # Amit upvotes the post
         post.upvote(self.amit)
 
         # Home page as seen by Amit
         post = Post.objects.recent_posts_with_my_votes(self.amit).first()
-        self.assertTrue('upvote' in post.my_votes)
-        self.assertTrue('downvote' not in post.my_votes)
-        self.assertEquals(post.score, 2)
+        self.assertTrue(post.is_upvoted)
+        self.assertFalse(post.is_downvoted)
+        self.assertEquals(post.upvotes, 1)
+        self.assertEquals(post.downvotes, 0)
 
         # Swetha downvotes
         post.downvote(self.swetha)
 
         # Home page as seen by Swetha
         post = Post.objects.recent_posts_with_my_votes(self.swetha).first()
-        self.assertEquals(post.score, 1)
-        self.assertTrue('upvote' not in post.my_votes)
-        self.assertTrue('downvote' in post.my_votes)
-
+        self.assertFalse(post.is_upvoted)
+        self.assertTrue(post.is_downvoted)
+        self.assertEquals(post.upvotes, 1)
+        self.assertEquals(post.downvotes, 1)
+        
         # Amit undo's his vote
         post.undo_vote(self.amit)
 
         # Home page as seen by Amit
         post = Post.objects.recent_posts_with_my_votes(self.amit).first()
-        self.assertEquals(post.score, 0)
-        self.assertTrue('upvote' not in post.my_votes)
-        self.assertTrue('downvote' not in post.my_votes)        
-
+        self.assertFalse(post.is_upvoted)
+        self.assertFalse(post.is_downvoted)
+        self.assertEquals(post.upvotes, 0)
+        self.assertEquals(post.downvotes, 1)
 
     def test_comments_ordering(self):
         _c1 = "See my Biography!"
