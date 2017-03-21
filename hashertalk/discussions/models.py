@@ -152,11 +152,15 @@ class PostsManager(models.Manager):
 
         votes_by_post = defaultdict(set)
         for obj in objects:
-            vote_type_str = self.vote_type_to_string(obj.type_of_vote)
-            votes_by_post[obj.object_id].add(vote_type_str)
+            votes_by_post[obj.object_id].add(obj.type_of_vote)
 
         for post in posts:
-            post.my_votes = votes_by_post[post.id]
+            if UPVOTE in votes_by_post[post.id]:
+                post.is_upvoted = True
+            elif DOWNVOTE in votes_by_post[post.id]:
+                post.is_downvoted = True
+            elif FLAG in votes_by_post[post.id]:
+                post.is_flagged = True
             
         return posts
 

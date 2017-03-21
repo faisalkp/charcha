@@ -1,0 +1,15 @@
+<div data-object-type="{{obj_type}}" data-object-id="{{obj.id}}" class="vote-control">
+  {% if obj.is_upvoted and obj.is_downvoted %}
+  <button class="vote-button upvote" data-state="voted"></button>
+  <button class="vote-button downvote" data-state="voted"></button>
+  {% elif obj.is_upvoted %}
+  <button class="vote-button upvote" data-state="voted"></button>
+  <button class="vote-button downvote" data-state="disabled"></button>
+  {% elif obj.is_downvoted %}
+  <button class="vote-button upvote" data-state="disabled"></button>
+  <button class="vote-button downvote" data-state="voted"></button>
+  {% else %}
+  <button class="vote-button upvote" data-state="enabled"></button>
+  <button class="vote-button downvote" data-state="enabled"></button>
+  {% endif %}
+</div>

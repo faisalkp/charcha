@@ -8,21 +8,7 @@
 {% block content %}
 <div class="container-fluid">
   <div class="post">
-      <div data-object-type="posts" data-object-id="{{post.id}}" class="vote-control">
-        {% if post.is_upvoted and post.is_downvoted %}
-        <button class="vote-button upvote" data-state="voted"></button>
-        <button class="vote-button downvote" data-state="voted"></button>
-        {% elif post.is_upvoted %}
-        <button class="vote-button upvote" data-state="voted"></button>
-        <button class="vote-button downvote" data-state="disabled"></button>
-        {% elif post.is_downvoted %}
-        <button class="vote-button upvote" data-state="disabled"></button>
-        <button class="vote-button downvote" data-state="voted"></button>
-        {% else %}
-        <button class="vote-button upvote" data-state="enabled"></button>
-        <button class="vote-button downvote" data-state="enabled"></button>
-        {% endif %}
-      </div>
+      {% include "partials/post-vote-control.html" with obj_type='posts' obj=post %}
       <div>
           <div class="post-title">
             <h2>{{ post.title }}</h2>
@@ -53,21 +39,8 @@
   <div class="comments">
   {% for comment in comments %}
     <div id="comment-{{comment.id}}" class="comment indent-{{comment.indent}}">
-      <div data-object-type="comments" data-object-id="{{comment.id}}" class="vote-control">
-        {% if comment.is_upvoted and comment.is_downvoted %}
-        <button class="vote-button upvote" data-state="voted"></button>
-        <button class="vote-button downvote" data-state="voted"></button>
-        {% elif comment.is_upvoted %}
-        <button class="vote-button upvote" data-state="voted"></button>
-        <button class="vote-button downvote" data-state="disabled"></button>
-        {% elif comment.is_downvoted %}
-        <button class="vote-button upvote" data-state="disabled"></button>
-        <button class="vote-button downvote" data-state="voted"></button>
-        {% else %}
-        <button class="vote-button upvote" data-state="enabled"></button>
-        <button class="vote-button downvote" data-state="enabled"></button>
-        {% endif %}
-      </div>
+      {% include "partials/post-vote-control.html" with obj_type='comments' obj=comment %}
+      
       <div>
         <div class="comment-header">
           <span class="comment-author">

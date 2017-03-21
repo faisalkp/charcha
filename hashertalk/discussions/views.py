@@ -37,16 +37,17 @@ class DiscussionView(View):
             .annotate(score=F('upvotes') - F('downvotes'))\
             .select_related("author").get(pk=post_id)
 
-        content_type = ContentType.objects.get_for_model(Post)
-        post_votes = Vote.objects.filter(content_type=content_type.id,
-            object_id=post_id, type_of_vote__in=(UPVOTE, DOWNVOTE),
-            voter=request.user)
-        
-        for v in post_votes:
-            if v.type_of_vote == UPVOTE:
-                post.is_upvoted = True
-            elif v.type_of_vote == DOWNVOTE:
-                post.is_downvoted = True
+        if request.user.is_authenticated():
+            content_type = ContentType.objects.get_for_model(Post)
+            post_votes = Vote.objects.filter(content_type=content_type.id,
+                object_id=post_id, type_of_vote__in=(UPVOTE, DOWNVOTE),
+                voter=request.user)
+            
+            for v in post_votes:
+                if v.type_of_vote == UPVOTE:
+                    post.is_upvoted = True
+                elif v.type_of_vote == DOWNVOTE:
+                    post.is_downvoted = True
 
         comments = Comment.objects.best_ones_first(post_id, request.user.id)
 
