@@ -41,10 +41,14 @@ class Vote(models.Model):
     submission_time = models.DateTimeField(auto_now_add=True)
 
 class Votable(models.Model):
+    """ An object on which people would want to vote
+        Post and Comment are concrete classes
+    """
     class Meta:
         abstract = True
 
     votes = GenericRelation(Vote)
+    author = models.ForeignKey(User, on_delete=models.PROTECT)
 
     # denormalization to save database queries
     # flags = count of votes of type "Flag"
@@ -84,7 +88,11 @@ class Votable(models.Model):
         self.upvotes = F('upvotes') - upvotes
         self.downvotes = F('downvotes') - downvotes
         self.save(update_fields=["upvotes", "downvotes"])
-    
+
+        # Increment/Decrement the score of author
+        self.author.score = F('score') - upvotes + downvotes
+        self.author.save(update_fields=["score"])
+
     def _vote(self, user, type_of_vote):
         content_type = ContentType.objects.get_for_model(self)
         if self._already_voted(user, content_type, type_of_vote):
@@ -95,16 +103,23 @@ class Votable(models.Model):
             type_of_vote=type_of_vote)
         vote.save()
 
+        score_delta = 0
         # Next, update our denormalized columns
         if type_of_vote == FLAG:
             self.flags = F('flags') + 1
         elif type_of_vote == UPVOTE:
             self.upvotes = F('upvotes') + 1
+            score_delta = 1
         elif type_of_vote == DOWNVOTE:
             self.downvotes = F('downvotes') + 1
+            score_delta = -1
         else:
             raise Exception("Invalid type of vote " + type_of_vote)
         self.save(update_fields=["upvotes", "downvotes", "flags"])
+
+        # Increment/Decrement the score of author
+        self.author.score = F('score') + score_delta
+        self.author.save(update_fields=["score"])
 
     def _already_voted(self, user, content_type, type_of_vote):
         return Vote.objects.filter(content_type=content_type.id,
@@ -164,7 +179,6 @@ class Post(Votable):
     title = models.CharField(max_length=120)
     url = models.URLField(blank=True)
     text = models.TextField(blank=True, max_length=8192)
-    author = models.ForeignKey(User, on_delete=models.PROTECT)
     submission_time = models.DateTimeField(auto_now_add=True)
     num_comments = models.IntegerField(default=0)
 
@@ -253,7 +267,6 @@ class Comment(Votable):
                 null=True, blank=True,
                 on_delete=models.PROTECT)
     text = models.TextField(max_length=8192)
-    author = models.ForeignKey(User, on_delete=models.PROTECT)
     submission_time = models.DateTimeField(auto_now_add=True)
     
     # wbs helps us to track the comments as a tree
