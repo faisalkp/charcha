@@ -1,5 +1,6 @@
 {
- "name": "App",
+ "name": "Charcha",
+ "gcm_sender_id": "565420311169",
  "icons": [
   {
    "src": "\/android-icon-36x36.png",

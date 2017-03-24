@@ -5,6 +5,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import F
+from django.urls import reverse
 
 from collections import defaultdict
 
@@ -18,7 +19,7 @@ class User(AbstractUser):
         db_table = "users"
     
     score = models.IntegerField(default=0)
-
+    
 class Vote(models.Model):
     class Meta:
         db_table = "votes"
@@ -197,7 +198,6 @@ class PostsManager(models.Manager):
         }
         return mapping[vote_type]
 
-
 class Post(Votable):
     class Meta:
         db_table = "posts"
@@ -224,6 +224,14 @@ class Post(Votable):
 
         self.num_comments = F('num_comments') + 1
         self.save(update_fields=["num_comments"])
+        
+        if(self.author.username != author.username):
+            notify_users(
+                    [self.author],
+                    "%s commented on your post" % author.username,
+                    comment.text,
+                    reverse("reply_to_comment", args=[comment.id])
+                )
 
         return comment
 
@@ -316,6 +324,23 @@ class Comment(Votable):
 
         comment.post.num_comments = F('num_comments') + 1
         comment.post.save()
+
+        if(comment.post.author.username != author.username):
+            notify_users(
+                    [comment.post.author],
+                    "%s commented on your post" % comment.author.username,
+                    comment.text,
+                    reverse("reply_to_comment", args=[comment.id])
+                )
+
+        if(comment.parent_comment.author.username != author.username):
+            notify_users(
+                    [comment.parent_comment.author],
+                    "%s replied to your comment" % comment.author.username,
+                    comment.text,
+                    reverse("reply_to_comment", args=[comment.id])
+                )
+
         return comment
 
     def __str__(self):
@@ -349,6 +374,25 @@ def _find_next_wbs(post, parent_wbs=None):
         last_wbs = max_wbs.split(".")[-1]
         next_wbs = int(last_wbs) + 1
         return first_wbs + '{0:04d}'.format(next_wbs)
+
+def notify_users(users, title, body, relative_link):
+    for user in users:
+        for subscription in user.subscriptions.all():
+            subscription.send_notification(
+                title,
+                {
+                    "body": body,
+                    "icon": "/apple-icon-120x120.png",
+                    "badge": "/android-icon-96x96.png",
+                    "actions": [
+                        {
+                          "action": "https://hashedin-charcha.herokuapp.com%s" % relative_link,
+                          "title": "View Discussion",
+                          "icon": "/open-new-window.png"
+                        }
+                    ]
+                }
+            )
 
 class Favourite(models.Model):
     class Meta:

@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'bootstrapform',
     'hashertalk.discussions',
+    'hashertalk.pushpa',
 ]
 
 MIDDLEWARE = [

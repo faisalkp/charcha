@@ -10,7 +10,7 @@
 
 <div class="comment-text">
 <p>
-{{ parent_comment.text | truncatechars:200 | markdown }}
+{{ parent_comment.text | markdown }}
 </p>
 </div>
 
@@ -24,4 +24,10 @@
 </form>
 
 </div></div></div>
+{% endblock %}
+
+{% block before-body-close %}
+<script>
+    $("#id_text").focus();
+</script>
 {% endblock %}
