@@ -115,6 +115,7 @@ h1 {
 }
 .comment-text {
     margin-bottom: 5px;
+    min-height: 40px;
 }
 .comment-header,
 .comment-header a {

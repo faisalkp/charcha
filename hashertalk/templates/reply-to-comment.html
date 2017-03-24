@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% load bootstrap %}
 {% load markdown %}
 {% block title %}Reply to Comment{% endblock %}
@@ -16,18 +17,29 @@
 
 <div class="row">
 <div class="col-md-4 col-sm-6">
-
+<br/>
 <form method="post">
     {% csrf_token %}
     {{ form | bootstrap }}
     <input type="submit" value="Submit Comment" />
 </form>
-
+<br/>
+<strong>Preview</strong>
+<div class="comment-text">
+  <p id="preview">
+  </p>
+</div>
 </div></div></div>
+
 {% endblock %}
 
 {% block before-body-close %}
 <script>
     $("#id_text").focus();
+    $('#id_text').bind('input propertychange', function() {
+        html_content = markdown.toHTML(this.value);
+        $("#preview").html(html_content)
+    });
 </script>
+<script src="{% static "markdown.min.js" %}"></script>
 {% endblock %}

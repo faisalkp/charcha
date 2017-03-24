@@ -31,6 +31,9 @@ class CommentForm(forms.ModelForm):
         labels = {
             'text': 'Your Comment',
         }
+        help_texts = {
+            'text': 'Markdown Supported',
+        }
 
 @method_decorator(login_required, name='post')
 class DiscussionView(View):
