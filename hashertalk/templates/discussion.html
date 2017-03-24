@@ -51,6 +51,10 @@
           <span>{{comment.score}} points</span>
           <span> | </span>
           <span class="comment-submission-time">{{ comment.submission_time | naturaltime }}</span>
+          {% if request.user.username == comment.author.username %}
+          <span> | </span>
+          <span><a href="{% url 'edit_comment' comment.id %}">edit</a>
+          {% endif %}
           <span> | </span>
           <span><a href="#comment-{{comment.id}}">permalink</a>
           {% if request.user.is_staff %}

@@ -79,6 +79,25 @@ class ReplyToComment(LoginRequiredMixin, View):
         post_url = reverse('discussion', args=[parent_comment.post.id])
         return HttpResponseRedirect(post_url)
 
+class EditComment(LoginRequiredMixin, View):
+    def get(self, request, **kwargs):
+        comment = get_object_or_404(Comment, pk=kwargs['id'])
+        form = CommentForm(instance=comment)
+        context = {"form": form}
+        return render(request, "edit-comment.html", context=context)
+
+    def post(self, request, **kwargs):
+        comment = get_object_or_404(Comment, pk=kwargs['id'])
+        form = CommentForm(request.POST, instance=comment)
+
+        if not form.is_valid():
+            context = {"form": form}
+            return render(request, "edit-comment.html", context=context)
+        else:
+            form.save()
+        post_url = reverse('discussion', args=[comment.post.id])
+        return HttpResponseRedirect(post_url)
+
 class StartDiscussionForm(forms.ModelForm):
     class Meta:
         model = Post

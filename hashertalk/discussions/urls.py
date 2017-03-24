@@ -10,6 +10,7 @@ urlpatterns = [
     url(r'^create-profile/$', views.CreateProfileView.as_view(), name="create_profile"),
 
     url(r'^comments/(?P<id>\d+)/reply$', views.ReplyToComment.as_view(), name="reply_to_comment"),
+    url(r'^comments/(?P<id>\d+)/edit$', views.EditComment.as_view(), name="edit_comment"),
 
     url(r'^api/posts/(?P<post_id>\d+)/upvote$', views.upvote_post, name="upvote_post"),
     url(r'^api/posts/(?P<post_id>\d+)/downvote$', views.downvote_post, name="downvote_post"),
