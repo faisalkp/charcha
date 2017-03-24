@@ -9,10 +9,10 @@ SESSION_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS=3600
 SECURE_HSTS_INCLUDE_SUBDOMAINS=False
 
-if os.environ.get(GCM_KEY, ''):
-    WEB_PUSH_NOTIFICATION = {
-        'GCM_KEY': os.environ.get(GCM_KEY)
-    }
+# if os.environ.get(GCM_KEY, ''):
+#     WEB_PUSH_NOTIFICATION = {
+#         'GCM_KEY': os.environ.get(GCM_KEY)
+#     }
 
 # Configure logentries only if LOGENTRIES_KEY is defined in settings
 if os.environ.get("LOGENTRIES_KEY", ''):
