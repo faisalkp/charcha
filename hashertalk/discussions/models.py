@@ -9,6 +9,9 @@ from django.urls import reverse
 
 from collections import defaultdict
 
+# TODO: Read this from settings 
+SERVER_URL = "https://charcha.hashedin.com"
+
 UPVOTE = 1
 DOWNVOTE = 2
 FLAG = 3
@@ -386,7 +389,7 @@ def notify_users(users, title, body, relative_link):
                     "badge": "/android-icon-96x96.png",
                     "actions": [
                         {
-                          "action": "https://hashedin-charcha.herokuapp.com%s" % relative_link,
+                          "action": "%s%s" % (SERVER_URL, relative_link),
                           "title": "View Discussion",
                           "icon": "/open-new-window.png"
                         }
