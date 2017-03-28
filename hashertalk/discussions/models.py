@@ -387,13 +387,9 @@ def notify_users(users, title, body, relative_link):
                     "body": body,
                     "icon": "/apple-icon-120x120.png",
                     "badge": "/android-icon-96x96.png",
-                    "actions": [
-                        {
-                          "action": "%s%s" % (SERVER_URL, relative_link),
-                          "title": "View Discussion",
-                          "icon": "/open-new-window.png"
-                        }
-                    ]
+                    "data": {
+                        "link": "%s%s" % (SERVER_URL, relative_link)
+                    }
                 }
             )
 
