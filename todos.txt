@@ -1,6 +1,0 @@
-TODOs
-=====
-
-1. Allow edits to posts and comments
-1. Gamification - score for users based on upvotes & downvotes
-1. 

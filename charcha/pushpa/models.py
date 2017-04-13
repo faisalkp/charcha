@@ -1,5 +1,5 @@
 from django.db import models
-from hashertalk.discussions.models import User
+from charcha.discussions.models import User
 from pywebpush import WebPusher
 import json
 from django.conf import settings

@@ -24,6 +24,6 @@ if os.environ.get("LOGENTRIES_KEY", ''):
                 'formatter': 'verbose'
             }
 
-    LOGGING['loggers']['hashertalk']['handlers'] = ['console', 'file', 'logentries']
+    LOGGING['loggers']['charcha']['handlers'] = ['console', 'file', 'logentries']
 
 

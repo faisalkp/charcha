@@ -1,3 +1,3 @@
-web: gunicorn hashertalk.wsgi
+web: gunicorn charcha.wsgi
 
 
